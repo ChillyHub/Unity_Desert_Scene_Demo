@@ -2,11 +2,12 @@
 #define PROCEDURAL_SKYBOX_PASS_INCLUDED
 
 #include "Assets/Shaders/ShaderLibrary/Utility.hlsl"
+#include "Assets/Shaders/ShaderLibrary/Atmosphere.hlsl"
 
 struct Attributes
 {
     float4 positionOS : POSITION;
-    float2 baseUV : TEXCOORD0;
+    float3 baseUV : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -15,74 +16,119 @@ struct Varyings
     float4 positionCS : SV_POSITION;
     float3 positionWS : TEXCOORD0;
     float3 viewPosWS : TEXCOORD1;
-    float2 baseUV : TEXCOORD2;
+    float3 baseUV : TEXCOORD2;
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-/**
- * \brief 
- * \param tIn In sphere intersection point t
- * \param tOut Out sphere intersection point t
- * \param D Ray direction
- * \param O Ray original
- * \param C Sphere center
- * \param R Sphere radius
- */
-void GetSphereIntersection(out float tIn, out float tOut, float3 D, float3 O, float3 C, float R)
+float3 GetBaseSkyboxColor(PerMaterial d, float3 sunDir, float3 moonDir, float3 viewDir, float3 uv)
 {
-    float3 co = O - C;
-    float a = dot(D, D);
-    float b = 2.0 * dot(D, co);
-    float c = dot(co, co) - R * R;
-    float m = sqrt(max(b * b - 4.0 * a * c, 0.0));
-    float div = rcp(2.0 * a);
-
-    tIn = (-b - m) * div;
-    tOut = (-b + m) * div;
+    half3 horDayColor = lerp(d.sunColor, d.horizDayColor, smoothstep(0.0, 0.4, sunDir.y));
+    half3 horNightColor = d.horizNightColor;
+    half3 dayColor = lerp(d.horizDayColor, d.dayColor, smoothstep(0.0, 0.6, abs(uv.y)));
+    half3 nightColor = lerp(d.horizNightColor, d.nightColor, smoothstep(0.0, 0.6, abs(uv.y)));
+    dayColor = lerp(dayColor, horDayColor, smoothstep(0.2, 0.0, abs(uv.y)) * saturate(dot(-sunDir, viewDir)));
+    nightColor = lerp(nightColor, horNightColor, smoothstep(0.2, 0.0, abs(uv.y)) * saturate(dot(-moonDir, viewDir)));
+    return lerp(nightColor, dayColor, smoothstep(-0.5, 0.5, dot(sunDir, float3(0.0, 1.0, 0.0))));
 }
 
-float GetMiePhaseFunction(float cosTheta, float g)
+float3 GetMieScatteringColor(PerMaterial d, float3 lightDir, float3 moonDir, float3 viewDir, float clamp = 0.0)
 {
-    float g2 = g * g;
-    float cos2 = cosTheta * cosTheta;
-    float num = 3.0 * (1.0 - g2) * (1.0 + cos2);
-    float denom = rcp(8.0 * PI * (2.0 + g2) * pow(abs(1.0 + g2 - 2.0 * g * cosTheta), 1.5));
-    return num * denom;
+    float tSIn, tSOut, tMIn, tMOut;
+    GetSphereIntersection(tSIn, tSOut,
+        lightDir, float3(0.0, 0.0, 0.0), float3(0.0, -d.radius, 0.0), d.radius + d.thickness);
+    GetSphereIntersection(tMIn, tMOut,
+        moonDir, float3(0.0, 0.0, 0.0), float3(0.0, -d.radius, 0.0), d.radius + d.thickness);
+
+    float lenSun = tSOut;
+    float lenMoon = tMOut;
+    float cosThetaSun = dot(-lightDir, viewDir);
+    float cosThetaMoon = dot(-moonDir, viewDir);
+    float3 coefSun = pow(float3(d.scatteringRedWave, d.scatteringGreenWave, d.scatteringBlueWave) * d.scattering, 10.0);
+    float3 coefMoon = pow(d.scatteringMoon, 10.0);
+    half3 scatteringSun = d.sunColor * GetMiePhaseFunction(cosThetaSun, d.gDayMie) * (1.0 - exp(-coefSun * lenSun));
+    half3 scatteringMoon = d.moonColor * GetMiePhaseFunction(cosThetaMoon, d.gNightMie) * (1.0 - exp(-coefMoon * lenMoon));
+
+    half3 finalColor = scatteringSun * d.dayScatteringFac + scatteringMoon * d.nightScatteringFac;
+    
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        finalColor = min(finalColor, lerp(d.sunColor, d.moonColor, d.isNight));
+    }
+    return finalColor;
 }
 
-float3 GetBaseSkyboxColor(PerMaterial d, float3 lightDir, float2 uv)
+float3 GetMieScatteringRayMarching(PerMaterial d, float3 lightDir, float3 viewDir, float clamp = 0.0)
 {
-    half3 dayColor = lerp(d.horizDayColor, d.dayColor, smoothstep(0.0, 0.5, abs(uv.y)));
-    half3 nightColor = lerp(d.horizNightColor, d.nightColor, smoothstep(0.0, 0.5, abs(uv.y)));
-    return lerp(nightColor, dayColor, smoothstep(-0.5, 0.5, dot(lightDir, float3(0.0, 1.0, 0.0))));
-}
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        return d.sunColor;
+    }
+    
+    float tVIn, tVOut;
+    GetSphereIntersection(tVIn, tVOut,
+        -viewDir, float3(0.0, 0.0, 0.0), float3(0.0, -d.radius, 0.0), d.radius + d.thickness);
 
-float3 GetMieScatteringColor(PerMaterial d, float3 lightDir, float3 viewDir)
-{
-    float tIn, tOut;
-    GetSphereIntersection(tIn, tOut, lightDir, float3(0.0, 0.0, 0.0), float3(0.0, -d.radius, 0.0), d.radius);
-
-    float len = tOut;
+    const float sampleCounts = 30.0;
+    float stepLen = tVOut / sampleCounts;
+    float viewD = stepLen * 0.5;
     float cosTheta = dot(-lightDir, viewDir);
-    float gMie = lerp(d.gDayMie, d.gNightMie, d.isMoon);
-    float scatteringFac = lerp(d.dayScatteringFac, d.nightScatteringFac, d.isMoon);
+    float gMie = lerp(d.gDayMie, d.gNightMie, d.isNight);
+    float scatteringFac = lerp(d.dayScatteringFac, d.nightScatteringFac, d.isNight);
     float3 coef = pow(float3(d.scatteringRedWave, d.scatteringGreenWave, d.scatteringBlueWave) * d.scattering, 10.0);
-    half3 scattering = d.sunColor * GetMiePhaseFunction(cosTheta, gMie) * (1.0 - exp(-coef * len));
 
-    return scattering * scatteringFac;
+    float3 currPos = -viewDir * stepLen * 0.5;
+    float3 scattering = float3(0.0, 0.0, 0.0);
+
+    UNITY_LOOP
+    for (float i = 0.0; i < sampleCounts; ++i)
+    {
+        float tLIn, tLOut;
+        GetSphereIntersection(tLIn, tLOut, lightDir, currPos, float3(0.0, -d.radius, 0.0), d.radius + d.thickness);
+
+        float lightLen = tLOut;
+        scattering += exp(-coef * (viewD + lightLen)) * stepLen;
+
+        currPos += -viewDir * stepLen;
+        viewD += stepLen;
+    }
+
+    scattering *= d.sunColor * coef * GetMiePhaseFunction(cosTheta, gMie);
+    
+    half3 finalColor = scattering * scatteringFac;
+    
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        finalColor = min(finalColor, lerp(d.sunColor, d.moonColor, d.isNight) * 0.5);
+    }
+    return finalColor;
 }
 
-float3 DrawSun(PerMaterial d, float3 lightDir, float3 viewDir)
+float3 DrawSun(PerMaterial d, float3 lightDir, float3 viewDir, float clamp = 0.0)
 {
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        return float3(0.0, 0.0, 0.0);
+    }
+    
     float visual = smoothstep(-0.01, 0.0, dot(viewDir, float3(0.0, -1.0, 0.0)));
     return d.sunColor * GetMiePhaseFunction(dot(-lightDir, viewDir), d.gSun) * visual;
 }
 
-float3 DrawMoon(PerMaterial d, float3 moonDir, float3 viewDir)
+float3 DrawMoon(PerMaterial d, float3 moonDir, float3 viewDir, float clamp = 0.0)
 {
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        return float3(0.0, 0.0, 0.0);
+    }
+
     float cosT = dot(-moonDir, viewDir);
-    float cosC = cos(0.2);
-    float sinC = sin(0.2);
+    float cosC = cos(0.08);
+    float sinC = sin(0.08);
 
     UNITY_BRANCH
     if (cosT < cosC)
@@ -99,21 +145,56 @@ float3 DrawMoon(PerMaterial d, float3 moonDir, float3 viewDir)
 
     float u = -asin(viewDirLS.x) / (sinC * PI);
     float v = -viewDirLS.y / sinC;
-    float2 uv = float2(u, v);
+    float2 uvColor = float2(u, v);
+    float2 uvAlpha = viewDirLS.xy / sinC * 0.5 + 0.5;
 
-    float3 color = SampleMoonDiffuseTexture(uv);
-    float alpha = SampleMoonAlphaTexture(uv);
-    return color * alpha;
+    float3 color = SampleMoonDiffuseTexture(uvColor);
+    float alpha = SampleMoonAlphaTexture(uvAlpha);
+    return d.moonColor * color * alpha;
 }
 
-float3 DrawClouds(PerMaterial d, float3 lightDir)
+float3 DrawClouds(PerMaterial d, float3 lightDir, float3 uv, out half cloudClamp)
 {
-    return float3(0.0, 0.0, 0.0);
+    float u = atan2(uv.x, uv.z) * INV_TWO_PI + 0.5;
+    float v = asin(uv.y) * INV_HALF_PI;
+    float2 uvAtlas1 = float2(frac(u * 2.0 + _Time.y * d.cloudsSpeed * 0.01), saturate((v - 0.02) * 6.0));
+    half4 clouds1 = SampleCloudsAtlas1Texture(uvAtlas1);
+
+    float2 uvNoise = float2(frac(u * 16.0) + _Time.y * d.cloudsSpeed * 0.4, saturate((v - 0.02) * 6.0));
+    half noise = SampleCloudsNoiseTexture(uvNoise);
+
+    half light = clouds1.r;
+    half edge = clouds1.g * saturate(dot(lightDir, uv));
+    half display = step(d.cloudsThreshold + noise * 0.05, clouds1.b);
+    half clamp = clouds1.a;
+
+    half3 colorAtlas1 = (d.cloudsColor * light + edge * d.sunColor) * display * clamp * 0.6;
+    cloudClamp = clamp * display;
+
+    half panoramic =
+        SampleCloudsPanoramicTexture(float2(frac(u + _Time.y * d.cloudsSpeed * 0.001), saturate((v - 0.02) * 3.0)));
+
+    half3 color = colorAtlas1 +
+        panoramic * (1.0 - cloudClamp) * smoothstep(-0.5, 0.5, dot(lightDir, float3(0.0, 1.0, 0.0)));
+
+    return color;
 }
 
-float3 DrawStars(PerMaterial d, float3 lightDir)
+float3 DrawStars(PerMaterial d, float3 uv, float clamp = 0.0)
 {
-    return float3(0.0, 0.0, 0.0);
+    UNITY_BRANCH
+    if (clamp > 0.1)
+    {
+        return float3(0.0, 0.0, 0.0);
+    }
+    
+    half3 starsColor = SampleStarsTexture(uv).ggg;
+    float theta = _Time.y * d.starsFlashSpeed * 0.25;
+    float x = uv.x * cos(theta) - uv.z * sin(theta);
+    float z = uv.z * cos(theta) + uv.x * sin(theta);
+    half starsNoise = SampleStarsNoiseTexture(float3(x, uv.y, z));
+
+    return starsColor * starsNoise;
 }
 
 Varyings ProceduralSkyboxPassVertex(Attributes input)
@@ -137,21 +218,24 @@ float4 ProceduralSkyboxPassFragment(Varyings input) : SV_Target
     float3 lightDir = light.direction;
 
     // TODO: Get Base Skybox Color
-    float3 base = GetBaseSkyboxColor(data, lightDir, input.baseUV);
-
-    // TODO: Get Mie Scattering Color
-    float3 mie = GetMieScatteringColor(data, lightDir, viewDir);
-
-    // TODO: Draw Sun or Moon
-    float3 sun = DrawSun(data, lightDir, viewDir);
-    float3 moon = DrawMoon(data, -lightDir, viewDir);
+    float3 base = GetBaseSkyboxColor(data, lightDir, -lightDir, viewDir, input.baseUV);
 
     // TODO: Draw Clouds and Stars
-    float3 cloud = DrawClouds(data, lightDir);
-    float3 star = DrawStars(data, lightDir);
+    float clamp;
+    float3 cloud = DrawClouds(data, lightDir, input.baseUV, clamp);
+    float3 star = DrawStars(data, input.baseUV, clamp);
 
-    return float4(min(mie + sun, 10.0) * data.exposure, 1.0);
-    return float4(min(base + mie + sun + moon + cloud + star, 10.0), 1.0);
+    // TODO: Get Mie Scattering Color
+    //float3 mie = GetMieScatteringRayMarching(data, lightDir, viewDir);
+    float3 mie = GetMieScatteringColor(data, lightDir, -lightDir, viewDir, clamp);
+
+    // TODO: Draw Sun or Moon
+    float3 sun = DrawSun(data, lightDir, viewDir, clamp);
+    float3 moon = DrawMoon(data, -lightDir, viewDir, clamp);
+
+    float3 color = base + mie + sun + moon + cloud + star;
+    // return float4(input.baseUV, 1.0);
+    return float4(min(color * data.exposure, 10.0), 1.0);
 }
 
 #endif

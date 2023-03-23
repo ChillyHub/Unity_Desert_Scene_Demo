@@ -1,4 +1,4 @@
-Shader "Custom/Skybox/Procedural Skybox Shader"
+Shader "Custom/Skybox/Procedural Skybox"
 {
 	Properties
 	{
@@ -10,24 +10,37 @@ Shader "Custom/Skybox/Procedural Skybox Shader"
 		[HDR] _HorizNightColor("Horiz Night Color", Color) = (0.1, 0.2, 0.3, 1.0)
 		[HDR] _MoonColor("Moon Color", Color) = (0.6, 0.8, 1.0, 1.0)
 		_Scattering("Scattering Golbal", Range(0.0, 1.0)) = 0.5
-		_ScatteringRedWave("Scattering Red Wave", Range(0.0, 2.0)) = 1.0
-		_ScatteringGreenWave("Scattering Green Wave", Range(0.0, 2.0)) = 1.0
-		_ScatteringBlueWave("Scattering Blue Wave", Range(0.0, 2.0)) = 1.0
+		_ScatteringRedWave("Scattering Red Wave", Range(0.0, 1.0)) = 1.0
+		_ScatteringGreenWave("Scattering Green Wave", Range(0.0, 1.0)) = 1.0
+		_ScatteringBlueWave("Scattering Blue Wave", Range(0.0, 1.0)) = 1.0
+		_ScatteringMoon("Scattering Moon", Range(0.0, 1.0)) = 0.5
 		_Exposure("Exposure", Range(0.0, 10.0)) = 1.0
 		
 		[Header(Physic Setting)][Space]
     	_dayScatteringFac("Day Scattering Fac", Range(0.0, 1.0)) = 1.0
     	_nightScatteringFac("Night Scattering Fac", Range(0.0, 1.0)) = 0.5
-    	_gDayMie("Day Mie g", Range(0.75, 0.9999)) = 0.75
-    	_gNightMie("Night Mie g", Range(0.75, 0.9999)) = 0.75
-    	_gSun("Sun Mie g", Range(0.999, 1.0)) = 0.9999
+    	_gDayMie("Day Mie g", Range(0.5, 0.9999)) = 0.75
+    	_gNightMie("Night Mie g", Range(0.5, 0.9999)) = 0.75
+    	_gSun("Sun Mie g", Range(0.999, 1.0)) = 0.999
 		
 		[Header(Moon Texture)][Space]
-		_MoonDiffuse("Moon Diffuse Texture", 2D) = "white" {}
-		_MoonAlpha("Moon Alpha Texture", 2D) = "white" {}
+		_MoonDiffuse("Moon Diffuse Texture", 2D) = "black" {}
+		_MoonAlpha("Moon Alpha Texture", 2D) = "black" {}
 		
 		[Header(Cloud Setting)][Space]
-		_CloudsAtlas("Clouds Atlas", 2D) = "black" {}
+		_CloudsAtlas1("Clouds Atlas 1", 2D) = "black" {}
+		_CloudsAtlas2("Clouds Atlas 2", 2D) = "black" {}
+		_CloudsAtlas3("Clouds Atlas 3", 2D) = "black" {}
+		_CloudsPanoramic("Clouds Panoramic", 2D) = "black" {}
+		_CloudsNoise("Clouds Noise", 2D) = "black" {}
+		[HDR] _CloudsColor("Clouds Color", Color) = (1.0, 1.0, 1.0, 1.0)
+		_CloudsSpeed("Clouds Speed", Range(0.0, 10.0)) = 1.0
+		_CloudsThreshold("Clouds Display Threshold", Range(0.0, 1.0)) = 0.0
+		
+		[Header(Stars Setting)][Space]
+		_StarsTex("Stars Texture", Cube) = "black" {}
+		_StarsNoise("Stars Noise", Cube) = "black" {}
+		_StarsFlashSpeed("Stars Flash Speed", Range(0.0, 1.0)) = 0.5
 	}
 	SubShader
 	{

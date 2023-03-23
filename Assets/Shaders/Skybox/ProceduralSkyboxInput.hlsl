@@ -7,8 +7,20 @@ TEXTURE2D(_MoonDiffuse);
 SAMPLER(sampler_MoonDiffuse);
 TEXTURE2D(_MoonAlpha);
 SAMPLER(sampler_MoonAlpha);
-TEXTURE2D(_CloudsAtlas);
-SAMPLER(sampler_CloudsAtlas);
+TEXTURE2D(_CloudsAtlas1);
+SAMPLER(sampler_CloudsAtlas1);
+TEXTURE2D(_CloudsAtlas2);
+SAMPLER(sampler_CloudsAtlas2);
+TEXTURE2D(_CloudsAtlas3);
+SAMPLER(sampler_CloudsAtlas3);
+TEXTURE2D(_CloudsPanoramic);
+SAMPLER(sampler_CloudsPanoramic);
+TEXTURE2D(_CloudsNoise);
+SAMPLER(sampler_CloudsNoise);
+TEXTURECUBE(_StarsTex);
+SAMPLER(sampler_StarsTex);
+TEXTURECUBE(_StarsNoise);
+SAMPLER(sampler_StarsNoise);
 
 CBUFFER_START(UnityPerMaterial)
     half3 _SunColor;
@@ -21,6 +33,7 @@ CBUFFER_START(UnityPerMaterial)
     float _ScatteringRedWave;
     float _ScatteringGreenWave;
     float _ScatteringBlueWave;
+    float _ScatteringMoon;
     float _Exposure;
     
     float _dayScatteringFac;
@@ -30,10 +43,16 @@ CBUFFER_START(UnityPerMaterial)
     float _gSun;
 
     float _SkyTime;
+
+    half3 _CloudsColor;
+    float _CloudsSpeed;
+    float _CloudsThreshold;
+
+    float _StarsFlashSpeed;
 CBUFFER_END
 
 const static float sThickness = 10000.0;
-const static float sRadius = 85000.0;
+const static float sRadius = 75000.0;
 
 struct PerMaterial
 {
@@ -47,6 +66,7 @@ struct PerMaterial
     float scatteringRedWave;
     float scatteringGreenWave;
     float scatteringBlueWave;
+    float scatteringMoon;
     float exposure;
     
     float dayScatteringFac;
@@ -59,7 +79,13 @@ struct PerMaterial
     float radius;
 
     float skyTime;
-    float isMoon;
+    float isNight;
+
+    half3 cloudsColor;
+    float cloudsSpeed;
+    float cloudsThreshold;
+
+    float starsFlashSpeed;
 };
 
 PerMaterial GetPerMaterial()
@@ -75,6 +101,7 @@ PerMaterial GetPerMaterial()
     o.scatteringRedWave = _ScatteringRedWave;
     o.scatteringGreenWave = _ScatteringGreenWave;
     o.scatteringBlueWave = _ScatteringBlueWave;
+    o.scatteringMoon = _ScatteringMoon;
     o.exposure = _Exposure;
     
     o.dayScatteringFac = _dayScatteringFac;
@@ -87,7 +114,13 @@ PerMaterial GetPerMaterial()
     o.radius = sRadius;
 
     o.skyTime = _SkyTime;
-    o.isMoon = 0.0;
+    o.isNight = 0.0;
+
+    o.cloudsColor = _CloudsColor;
+    o.cloudsSpeed = _CloudsSpeed;
+    o.cloudsThreshold = _CloudsThreshold;
+
+    o.starsFlashSpeed = _StarsFlashSpeed;
 
     return o;
 }
@@ -100,6 +133,50 @@ half3 SampleMoonDiffuseTexture(float2 uv)
 half SampleMoonAlphaTexture(float2 uv)
 {
     return SAMPLE_TEXTURE2D(_MoonAlpha, sampler_MoonAlpha, uv).a;
+}
+
+half4 SampleCloudsAtlas1Texture(float2 uv)
+{
+    float u = frac(uv.x * 4.0);
+    float v = (floor(uv.x * 4.0) + uv.y) * 0.25;
+
+    return SAMPLE_TEXTURE2D(_CloudsAtlas1, sampler_CloudsAtlas1, float2(u, v));
+}
+
+half4 SampleCloudsAtlas2Texture(float2 uv)
+{
+    float u = frac(uv.x * 4.0);
+    float v = (floor(uv.x * 4.0) + uv.y) * 0.25;
+
+    return SAMPLE_TEXTURE2D(_CloudsAtlas2, sampler_CloudsAtlas2, float2(u, v));
+}
+
+half4 SampleCloudsAtlas3Texture(float2 uv)
+{
+    float u = frac(uv.x * 4.0);
+    float v = (floor(uv.x * 4.0) + uv.y) * 0.25;
+
+    return SAMPLE_TEXTURE2D(_CloudsAtlas3, sampler_CloudsAtlas3, float2(u, v));
+}
+
+half SampleCloudsPanoramicTexture(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_CloudsPanoramic, sampler_CloudsPanoramic, uv).a;
+}
+
+half SampleCloudsNoiseTexture(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_CloudsNoise, sampler_CloudsNoise, uv).r;
+}
+
+half2 SampleStarsTexture(float3 uv)
+{
+    return SAMPLE_TEXTURECUBE(_StarsTex, sampler_StarsTex, uv).rg;
+}
+
+half SampleStarsNoiseTexture(float3 uv)
+{
+    return SAMPLE_TEXTURECUBE(_StarsNoise, sampler_StarsNoise, uv).r;
 }
 
 #endif
