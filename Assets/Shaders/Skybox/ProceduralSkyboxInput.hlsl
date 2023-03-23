@@ -4,7 +4,7 @@
 #include "Assets/Shaders/ShaderLibrary/Utility.hlsl"
 
 TEXTURE2D(_MoonDiffuse);
-SAMPLER(sampler_MoonDifuse);
+SAMPLER(sampler_MoonDiffuse);
 TEXTURE2D(_MoonAlpha);
 SAMPLER(sampler_MoonAlpha);
 TEXTURE2D(_CloudsAtlas);
@@ -67,7 +67,7 @@ PerMaterial GetPerMaterial()
     PerMaterial o;
     o.sunColor = _SunColor;
     o.dayColor = _DayColor;
-    o.horizDayColor = _HorizColor;
+    o.horizDayColor = _HorizDayColor;
     o.nightColor = _NightColor;
     o.horizNightColor = _HorizNightColor;
     o.moonColor = _MoonColor;
@@ -90,6 +90,16 @@ PerMaterial GetPerMaterial()
     o.isMoon = 0.0;
 
     return o;
+}
+
+half3 SampleMoonDiffuseTexture(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_MoonDiffuse, sampler_MoonDiffuse, uv).aaa;
+}
+
+half SampleMoonAlphaTexture(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_MoonAlpha, sampler_MoonAlpha, uv).a;
 }
 
 #endif

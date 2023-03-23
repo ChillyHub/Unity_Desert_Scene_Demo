@@ -50,14 +50,14 @@ float GetMiePhaseFunction(float cosTheta, float g)
     return num * denom;
 }
 
-half3 GetBaseSkyboxColor(PerMaterial d, float3 lightDir, float2 uv)
+float3 GetBaseSkyboxColor(PerMaterial d, float3 lightDir, float2 uv)
 {
     half3 dayColor = lerp(d.horizDayColor, d.dayColor, smoothstep(0.0, 0.5, abs(uv.y)));
     half3 nightColor = lerp(d.horizNightColor, d.nightColor, smoothstep(0.0, 0.5, abs(uv.y)));
     return lerp(nightColor, dayColor, smoothstep(-0.5, 0.5, dot(lightDir, float3(0.0, 1.0, 0.0))));
 }
 
-half3 GetMieScatteringColor(PerMaterial d, float3 lightDir, float3 viewDir)
+float3 GetMieScatteringColor(PerMaterial d, float3 lightDir, float3 viewDir)
 {
     float tIn, tOut;
     GetSphereIntersection(tIn, tOut, lightDir, float3(0.0, 0.0, 0.0), float3(0.0, -d.radius, 0.0), d.radius);
@@ -66,12 +66,55 @@ half3 GetMieScatteringColor(PerMaterial d, float3 lightDir, float3 viewDir)
     float cosTheta = dot(-lightDir, viewDir);
     float gMie = lerp(d.gDayMie, d.gNightMie, d.isMoon);
     float scatteringFac = lerp(d.dayScatteringFac, d.nightScatteringFac, d.isMoon);
-    float3 coef = float3(d.scatteringRedWave, d.scatteringGreenWave, d.scatteringBlueWave) * d.scattering;
+    float3 coef = pow(float3(d.scatteringRedWave, d.scatteringGreenWave, d.scatteringBlueWave) * d.scattering, 10.0);
     half3 scattering = d.sunColor * GetMiePhaseFunction(cosTheta, gMie) * (1.0 - exp(-coef * len));
 
     return scattering * scatteringFac;
 }
 
+float3 DrawSun(PerMaterial d, float3 lightDir, float3 viewDir)
+{
+    float visual = smoothstep(-0.01, 0.0, dot(viewDir, float3(0.0, -1.0, 0.0)));
+    return d.sunColor * GetMiePhaseFunction(dot(-lightDir, viewDir), d.gSun) * visual;
+}
+
+float3 DrawMoon(PerMaterial d, float3 moonDir, float3 viewDir)
+{
+    float cosT = dot(-moonDir, viewDir);
+    float cosC = cos(0.2);
+    float sinC = sin(0.2);
+
+    UNITY_BRANCH
+    if (cosT < cosC)
+    {
+        return float3(0.0, 0.0, 0.0);
+    }
+    
+    float3 rightDir = cross(-moonDir, float3(0.0, 1.0, 0.0));
+    float3 upDir = cross(rightDir, -moonDir);
+    float3 frontDir = cross(rightDir, upDir);
+
+    float3x3 WToL = float3x3(rightDir, upDir, frontDir);
+    float3 viewDirLS = mul(WToL, viewDir);
+
+    float u = -asin(viewDirLS.x) / (sinC * PI);
+    float v = -viewDirLS.y / sinC;
+    float2 uv = float2(u, v);
+
+    float3 color = SampleMoonDiffuseTexture(uv);
+    float alpha = SampleMoonAlphaTexture(uv);
+    return color * alpha;
+}
+
+float3 DrawClouds(PerMaterial d, float3 lightDir)
+{
+    return float3(0.0, 0.0, 0.0);
+}
+
+float3 DrawStars(PerMaterial d, float3 lightDir)
+{
+    return float3(0.0, 0.0, 0.0);
+}
 
 Varyings ProceduralSkyboxPassVertex(Attributes input)
 {
@@ -89,26 +132,26 @@ Varyings ProceduralSkyboxPassVertex(Attributes input)
 float4 ProceduralSkyboxPassFragment(Varyings input) : SV_Target
 {
     Light light = GetMainLight();
+    PerMaterial data = GetPerMaterial();
     float3 viewDir = normalize(input.viewPosWS - input.positionWS);
     float3 lightDir = light.direction;
 
     // TODO: Get Base Skybox Color
-
-
+    float3 base = GetBaseSkyboxColor(data, lightDir, input.baseUV);
 
     // TODO: Get Mie Scattering Color
-
-
+    float3 mie = GetMieScatteringColor(data, lightDir, viewDir);
 
     // TODO: Draw Sun or Moon
+    float3 sun = DrawSun(data, lightDir, viewDir);
+    float3 moon = DrawMoon(data, -lightDir, viewDir);
 
+    // TODO: Draw Clouds and Stars
+    float3 cloud = DrawClouds(data, lightDir);
+    float3 star = DrawStars(data, lightDir);
 
-
-    // TODO: Draw Clouds
-    
-
-    
-    return float4(input.color + sun, 1.0);
+    return float4(min(mie + sun, 10.0) * data.exposure, 1.0);
+    return float4(min(base + mie + sun + moon + cloud + star, 10.0), 1.0);
 }
 
 #endif
