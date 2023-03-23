@@ -123,7 +123,7 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Scattering: 0.488
+    - _Scattering: 0.509
     - _ScatteringBlueWave: 1
     - _ScatteringGreenWave: 1
     - _ScatteringRedWave: 1
@@ -137,8 +137,8 @@ Material:
     - _dayScatteringFac: 1
     - _gDayMie: 0.75
     - _gNightMie: 0.75
-    - _gSun: 0.999
-    - _nightScatteringFac: 0.5
+    - _gSun: 0.999925
+    - _nightScatteringFac: 0.498
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
