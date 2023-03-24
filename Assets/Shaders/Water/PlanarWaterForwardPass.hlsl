@@ -38,11 +38,11 @@ struct Surface
     float3 normalReflectDirWS;
     float3 bumpReflectDirWS;
     float3 refractDirWS;
+    float3 fresnelTerm;
     
     float2 screenUV;
     float2 screenPosition;
-
-    float fresnelTerm;
+    
     float posDeviceDepth;
     float mapDeviceDepth;
 };
@@ -71,10 +71,17 @@ Surface GetSurface(Varyings i)
 
     half3 f0 = half3(0.03, 0.03, 0.03);
     o.fresnelTerm = f0 + (1.0 - f0) * pow(1.0 - saturate(dot(o.normalWS, o.viewDirWS)), 5.0);
-    o.posDeviceDepth = i.positionNDC.z;
+    o.posDeviceDepth = i.positionNDC.z / i.positionNDC.w;
     o.mapDeviceDepth = SampleDepthTexture(o.screenUV);
 
     return o;
+}
+
+float GetSDFMask(float2 uv)
+{
+    float2 range = abs(uv * 2.0 - 1.0);
+    float mask = smoothstep(0.0, 0.2, (1.0 - range.x) * (1.0 - range.y));
+    return mask;
 }
 
 half3 GetRefractionColor(PerMaterial pm, Surface surface)
@@ -95,17 +102,32 @@ half3 GetRefractionColor(PerMaterial pm, Surface surface)
 half3 GetReflectionColor(PerMaterial pm, Surface surface)
 {
     float2 reflectUV = SampleUVMappingTexture(surface.screenPosition);
+    half3 reflectColor = SampleOpaqueTexture(reflectUV);
 
     UNITY_BRANCH
     if (reflectUV.x < FLT_EPS && reflectUV.y < FLT_EPS)
     {
         // Filled space by skybox
+        half3 left = SampleOpaqueTexture(reflectUV + float2(-0.001, 0.0));
+        half3 right = SampleOpaqueTexture(reflectUV + float2(0.001, 0.0));
+        half3 up = SampleOpaqueTexture(reflectUV + float2(0.0, -0.001));
+        half3 down = SampleOpaqueTexture(reflectUV + float2(0.0, 0.001));
+
+        reflectColor = (left + right + up + down) * 0.25;
     }
-    
-    half3 reflectColor = SampleOpaqueTexture(reflectUV);
 
     // TODO: Blur and sample skybox outside mask
+    float mask = GetSDFMask(reflectUV);
+    half3 skybox = GlossyEnvironmentReflection(surface.normalReflectDirWS, 0.0h, 1.0h);
+    reflectColor = lerp(skybox, reflectColor, mask);
 
+    BRDFData brdf = (BRDFData)0;
+    brdf.roughness = 0.001;
+    brdf.roughness2 = brdf.roughness * brdf.roughness;
+    brdf.roughness2MinusOne = brdf.roughness2 - 1.0;
+    brdf.normalizationTerm = brdf.roughness * 4.0 + 2.0;
+    half3 specular = DirectBRDFSpecular(brdf, surface.bumpWS, surface.lightDirWS, surface.viewDirWS);
+    reflectColor += specular;
 
     // TODO: Disturb Color
 
@@ -147,21 +169,21 @@ half4 PlanarWaterPassFragment(Varyings input) : SV_Target
     // TODO: Get Refraction Color
     //       Sample Color Map and Add water color
     //       Add SSS, Add Disturbance
-    
+    half3 refraction = GetRefractionColor(pm, surface);
 
     // TODO: Get Reflection Color
     //       Use SSPR, and sample skybox
     //       Add specular
-
+    half3 reflection = GetReflectionColor(pm, surface);
 
     // TODO: Refraction or Reflection (By Fresnel)
-
+    half3 color = lerp(refraction, reflection, surface.fresnelTerm);
 
     // TODO: Add Wave
 
 
 
-    return half4(0.0, 0.0, 0.0, 1.0);
+    return half4(color, 1.0);
 }
 
 #endif

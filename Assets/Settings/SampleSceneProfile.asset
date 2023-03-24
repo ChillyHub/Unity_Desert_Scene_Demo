@@ -69,6 +69,28 @@ MonoBehaviour:
   rounded:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &-1565417312027460705
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5228d0708643482283b52e3740dcde4d, type: 3}
+  m_Name: ScreenSpacePlanarReflection
+  m_EditorClassIdentifier: 
+  active: 1
+  enable:
+    m_OverrideState: 1
+    m_Value: 1
+  planePosition:
+    m_OverrideState: 0
+    m_Value: {x: 0, y: 0, z: 0}
+  planeNormal:
+    m_OverrideState: 0
+    m_Value: {x: 0, y: 1, z: 0}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,6 +104,7 @@ MonoBehaviour:
   m_Name: SampleSceneProfile
   m_EditorClassIdentifier: 
   components:
+  - {fileID: -1565417312027460705}
   - {fileID: 849379129802519247}
   - {fileID: -7893295128165547882}
   - {fileID: -7011558710299706105}

@@ -57,7 +57,7 @@ PerMaterial GetPerMaterial()
     return o;
 }
 
-float2 DecodePackedUV(uint2 n)
+float2 DecodePackedUV(uint n)
 {
     uint x = n & 0xffff;
     uint y = n >> 16;
@@ -82,8 +82,9 @@ half3 SampleWaveTexture(float2 uv)
 
 float2 SampleUVMappingTexture(float2 screenPosition)
 {
-    uint n = _UVMappingTexture[(uint2)screenPosition].x;
-    return DecodePackedUV(n);
+    return _UVMappingTexture[(uint2)screenPosition].xy;
+    // uint n = _UVMappingTexture.Load(int3((int2)screenPosition, 0)); // [(uint2)screenPosition].x;
+    // return DecodePackedUV(n);
 }
 
 float SampleDepthTexture(float2 uv)

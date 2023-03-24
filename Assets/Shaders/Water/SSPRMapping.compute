@@ -1,0 +1,58 @@
+#pragma kernel SSPRMappingCSMain
+#pragma kernel SSPRMappingCSClear
+
+SamplerState PointClampSampler;
+SamplerState LinearClampSampler;
+RWTexture2D<float2> _UVMappingTexture;
+Texture2D<float4> _CameraDepthTexture;
+
+float _UVMappingWidth;
+float _UVMappingHeight;
+
+float3 _PlanePosition;
+float3 _PlaneNormal;
+
+#include "Assets/Shaders/ShaderLibrary/Utility.hlsl"
+
+uint EncodeMappingUV(uint2 srcScreenPos)
+{
+    return srcScreenPos.y << 16 | srcScreenPos.x;
+}
+
+[numthreads(16, 16, 1)]
+void SSPRMappingCSClear(uint3 id : SV_DispatchThreadID)
+{
+    _UVMappingTexture[id.xy] = float2(0.0, 0.0);
+}
+
+[numthreads(16, 16, 1)]
+void SSPRMappingCSMain(uint3 id : SV_DispatchThreadID)
+{
+    float w = _UVMappingWidth;
+    float h = _UVMappingHeight;
+
+    float2 positionNDC = float2(((float)id.x + 0.5) / w, ((float)id.y + 0.5) / h);
+    float deviceDepth = _CameraDepthTexture.SampleLevel(PointClampSampler, positionNDC, 0).r;
+    float3 srcPosWS = ComputeWorldSpacePosition(positionNDC, deviceDepth, unity_MatrixInvVP);
+
+    UNITY_BRANCH
+    if (dot(srcPosWS - _PlanePosition, _PlaneNormal) < 0.0)
+    {
+        return;
+    }
+
+    float3 destPosWS = srcPosWS - 2.0 * _PlaneNormal * dot(_PlaneNormal, srcPosWS - _PlanePosition);
+    float2 destUV = ComputeNormalizedDeviceCoordinates(destPosWS, unity_MatrixVP);
+    
+    uint2 destScreenPos = uint2((uint)(destUV.x * w), (uint)(destUV.y * h));
+
+    float2 currUV = _UVMappingTexture[destScreenPos];
+    float currDepth = _CameraDepthTexture.SampleLevel(PointClampSampler, currUV, 0).r;
+    
+    
+    //InterlockedMax(_UVMappingTexture[destScreenPos], EncodeMappingUV(destScreenPos));
+    if (LinearEyeDepth(deviceDepth, _ZBufferParams) < LinearEyeDepth(currDepth, _ZBufferParams) + 1)
+    {
+        _UVMappingTexture[destScreenPos] = positionNDC;
+    }
+}
