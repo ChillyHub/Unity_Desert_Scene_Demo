@@ -46,6 +46,8 @@ namespace UnityEngine.Rendering.Universal.Internal
         ColorAdjustments m_ColorAdjustments;
         Tonemapping m_Tonemapping;
         FilmGrain m_FilmGrain;
+        // CUSTOM: 
+        ScreenSpaceFog m_ScreenSpaceFog;
 
         // Misc
         const int k_MaxPyramidSize = 16;
@@ -241,6 +243,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_FilmGrain = stack.GetComponent<FilmGrain>();
             m_UseDrawProcedural = renderingData.cameraData.xr.enabled;
             m_UseFastSRGBLinearConversion = renderingData.postProcessingData.useFastSRGBLinearConversion;
+            
+            // CUSTOM: 
+            m_ScreenSpaceFog = stack.GetComponent<ScreenSpaceFog>();
 
             if (m_IsFinalPass)
             {
@@ -341,6 +346,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             bool useLensFlare = !LensFlareCommonSRP.Instance.IsEmpty();
             bool useMotionBlur = m_MotionBlur.IsActive() && !isSceneViewCamera;
             bool usePaniniProjection = m_PaniniProjection.IsActive() && !isSceneViewCamera;
+            
+            // CUSTOM:
+            bool useScreenSpaceFog = m_ScreenSpaceFog.IsActive();
 
             int amountOfPassesRemaining = (useStopNan ? 1 : 0) + (useSubPixeMorpAA ? 1 : 0) + (useDepthOfField ? 1 : 0) + (useLensFlare ? 1 : 0) + (useMotionBlur ? 1 : 0) + (usePaniniProjection ? 1 : 0);
 
@@ -426,6 +434,17 @@ namespace UnityEngine.Rendering.Universal.Internal
                 using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.SMAA)))
                 {
                     DoSubpixelMorphologicalAntialiasing(ref cameraData, cmd, GetSource(), GetDestination());
+                    Swap(ref renderer);
+                }
+            }
+            
+            // CUSTOM:
+            // Screen Space Fog
+            if (useScreenSpaceFog)
+            {
+                using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.ScreenSpaceFog)))
+                {
+                    DoScreenSpaceFog(ref cameraData, cmd, GetSource(), GetDestination());
                     Swap(ref renderer);
                 }
             }
@@ -716,6 +735,46 @@ namespace UnityEngine.Rendering.Universal.Internal
             // Cleanup
             cmd.ReleaseTemporaryRT(ShaderConstants._EdgeTexture);
             cmd.ReleaseTemporaryRT(ShaderConstants._BlendTexture);
+            cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
+        }
+
+        #endregion
+
+        // CUSTOM:
+        #region Screen Space Fog
+
+        void DoScreenSpaceFog(ref CameraData cameraData, CommandBuffer cmd,
+            RenderTargetIdentifier source, RenderTargetIdentifier destination)
+        {
+            var camera = cameraData.camera;
+            var material = m_Materials.screenSpaceFog;
+
+            material.SetColor(ShaderConstants._FogColor, m_ScreenSpaceFog.fogColor.value);
+            material.SetFloat(ShaderConstants._Density, m_ScreenSpaceFog.density.value);
+            material.SetFloat(ShaderConstants._HeightFogStart, m_ScreenSpaceFog.heightFogStart.value);
+            material.SetFloat(ShaderConstants._HeightFogDensity, m_ScreenSpaceFog.heightFogDensity.value);
+            material.SetFloat(ShaderConstants._DistanceFogMaxLength, m_ScreenSpaceFog.distanceFogMaxLength.value);
+            material.SetFloat(ShaderConstants._DistanceFogDensity, m_ScreenSpaceFog.distanceFogDensity.value);
+            material.SetColor(ShaderConstants._DayScatteringColor, m_ScreenSpaceFog.dayScatteringColor.value);
+            material.SetColor(ShaderConstants._NightScatteringColor, m_ScreenSpaceFog.nightScatteringColor.value);
+            material.SetFloat(ShaderConstants._Scattering, m_ScreenSpaceFog.scattering.value);
+            material.SetFloat(ShaderConstants._ScatteringRedWave, m_ScreenSpaceFog.scatteringRedWave.value);
+            material.SetFloat(ShaderConstants._ScatteringGreenWave, m_ScreenSpaceFog.scatteringGreenWave.value);
+            material.SetFloat(ShaderConstants._ScatteringBlueWave, m_ScreenSpaceFog.scatteringBlueWave.value);
+            material.SetFloat(ShaderConstants._ScatteringMoon, m_ScreenSpaceFog.scatteringMoon.value);
+            material.SetFloat(ShaderConstants._ScatteringFogDensity, m_ScreenSpaceFog.scatteringFogDensity.value);
+            material.SetFloat(ShaderConstants._DayScatteringFac, m_ScreenSpaceFog.dayScatteringFac.value);
+            material.SetFloat(ShaderConstants._NightScatteringFac, m_ScreenSpaceFog.nightScatteringFac.value);
+            material.SetFloat(ShaderConstants._gDayMie, m_ScreenSpaceFog.gDayMie.value);
+            material.SetFloat(ShaderConstants._gNightMie, m_ScreenSpaceFog.gNightMie.value);
+
+            cmd.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
+            
+            cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
+            DrawFullscreenMesh(cmd, material, 0);
+            
             cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
         }
 
@@ -1586,6 +1645,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             public readonly Material uber;
             public readonly Material finalPass;
             public readonly Material lensFlareDataDriven;
+            
+            // CUSTOM:
+            public readonly Material screenSpaceFog;
 
             public MaterialLibrary(PostProcessData data)
             {
@@ -1601,6 +1663,9 @@ namespace UnityEngine.Rendering.Universal.Internal
                 uber = Load(data.shaders.uberPostPS);
                 finalPass = Load(data.shaders.finalPostPassPS);
                 lensFlareDataDriven = Load(data.shaders.LensFlareDataDrivenPS);
+                
+                // CUSTOM:
+                screenSpaceFog = Load(Shader.Find("Assets/Shaders/Fog/ScreenSpaceFog.shader"));
             }
 
             Material Load(Shader shader)
@@ -1631,6 +1696,9 @@ namespace UnityEngine.Rendering.Universal.Internal
                 CoreUtils.Destroy(easu);
                 CoreUtils.Destroy(uber);
                 CoreUtils.Destroy(finalPass);
+                
+                // CUSTOM:
+                CoreUtils.Destroy(screenSpaceFog);
             }
         }
 
@@ -1693,6 +1761,26 @@ namespace UnityEngine.Rendering.Universal.Internal
 
             public static readonly int _ScalingSetupTexture = Shader.PropertyToID("_ScalingSetupTexture");
             public static readonly int _UpscaledTexture = Shader.PropertyToID("_UpscaledTexture");
+
+            // CUSTOM: 
+            public static readonly int _FogColor = Shader.PropertyToID("_FogColor");
+            public static readonly int _Density = Shader.PropertyToID("_Density");
+            public static readonly int _HeightFogStart = Shader.PropertyToID("_HeightFogStart");
+            public static readonly int _HeightFogDensity = Shader.PropertyToID("_HeightFogDensity");
+            public static readonly int _DistanceFogMaxLength = Shader.PropertyToID("_DistanceFogMaxLength");
+            public static readonly int _DistanceFogDensity = Shader.PropertyToID("_DistanceFogDensity");
+            public static readonly int _DayScatteringColor = Shader.PropertyToID("_DayScatteringColor");
+            public static readonly int _NightScatteringColor = Shader.PropertyToID("_NightScatteringColor");
+            public static readonly int _Scattering = Shader.PropertyToID("_Scattering");
+            public static readonly int _ScatteringRedWave = Shader.PropertyToID("_ScatteringRedWave");
+            public static readonly int _ScatteringGreenWave = Shader.PropertyToID("_ScatteringGreenWave");
+            public static readonly int _ScatteringBlueWave = Shader.PropertyToID("_ScatteringBlueWave");
+            public static readonly int _ScatteringMoon = Shader.PropertyToID("_ScatteringMoon");
+            public static readonly int _ScatteringFogDensity = Shader.PropertyToID("_ScatteringFogDensity");
+            public static readonly int _DayScatteringFac = Shader.PropertyToID("_DayScatteringFac");
+            public static readonly int _NightScatteringFac = Shader.PropertyToID("_NightScatteringFac");
+            public static readonly int _gDayMie = Shader.PropertyToID("_gDayMie");
+            public static readonly int _gNightMie = Shader.PropertyToID("_gNightMie");
 
             public static int[] _BloomMipUp;
             public static int[] _BloomMipDown;

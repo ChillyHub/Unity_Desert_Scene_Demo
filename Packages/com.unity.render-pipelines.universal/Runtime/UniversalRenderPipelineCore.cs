@@ -904,6 +904,7 @@ namespace UnityEngine.Rendering.Universal
         // PostProcessPass
         StopNaNs,
         SMAA,
+        ScreenSpaceFog, 
         GaussianDepthOfField,
         BokehDepthOfField,
         MotionBlur,
