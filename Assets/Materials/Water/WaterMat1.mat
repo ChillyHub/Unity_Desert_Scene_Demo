@@ -41,7 +41,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DisturbNoise:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: d08884aa2077c4d449b71ffa6aa186a8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -57,8 +57,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 74393184d72c1da4db0a35dc0e0df974, type: 3}
+        m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
@@ -73,8 +73,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaveTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 8c59a47875b943046b6b9a7b539d1c63, type: 3}
+        m_Scale: {x: 1, y: 56.7}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
@@ -100,8 +100,12 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DstBlend: 0
+    - _DisturbSpeed: 2
+    - _DstBlend: 10
     - _EnvironmentReflections: 1
+    - _FlowDirection: 270
+    - _FlowSpeed: 0.62
+    - _FresnelF0: 0.03
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -111,15 +115,18 @@ Material:
     - _PreMulAlphaToggle: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _ReflectionDisturb: 0.5
-    - _RefractionDisturb: 0.5
+    - _ReflectionDisturb: 0.015
+    - _RefractionDisturb: 0.023
+    - _Roughness: 0.0102
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _Surface: 0
-    - _WaterDepthThreshold: 3.41
-    - _WaterSubsurfaceThreshold: 1
+    - _WaterDepthThreshold: 7.05
+    - _WaterSubsurfaceThreshold: 2.02
+    - _WaveRange: 1.38
+    - _WaveSpeed: 1
     - _WavesDisturb: 0.5
     - _WorkflowMode: 1
     - _ZWrite: 1
@@ -130,7 +137,7 @@ Material:
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _WaterDepthColor: {r: 0.19999996, g: 0.39999998, b: 0.9, a: 1}
     - _WaterSallowColor: {r: 0.6, g: 0.7, b: 0.8, a: 1}
-    - _WaterSubsurfaceColor: {r: 0.39999998, g: 0.8, b: 0.5, a: 1}
+    - _WaterSubsurfaceColor: {r: 0.056051966, g: 0.4433962, b: 0.15478684, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &2281052696087263154
 MonoBehaviour:

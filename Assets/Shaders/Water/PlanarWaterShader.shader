@@ -9,15 +9,24 @@
 		_WaterDepthThreshold("Water Depth Threshold", Range(0.0, 10.0)) = 3.0
 		_WaterSubsurfaceThreshold("Water Subsurface Threshold", Range(0.0, 10.0)) = 1.0
 		
-		[Header(Textures)][Space]
+		[Header(Surface Setting)][Space]
 		_NormalMap("Normal Map", 2D) = "bump" {}
-		_DisturbNoise("Disturb Noise Texture", 2D) = "white" {}
+		_DisturbNoise("Disturb Noise Texture", 2D) = "gray" {}
 		_WaveTex("Water Wave Tex", 2D) = "black" {}
+		_Roughness("Surface Roughness", Range(0.0, 0.1)) = 0.01
+		_FresnelF0("Fresnel F0", Range(0.0, 0.5)) = 0.03
+		_FlowDirection("Flow Direction", Range(0.0, 360.0)) = 0.0
+		_FlowSpeed("Flow Speed", Range(0.0, 2.0)) = 1.0
 		
 		[Header(Disturb Setting)][Space]
 		_RefractionDisturb("Refraction Disturb", Range(0.0, 1.0)) = 0.5
 		_ReflectionDisturb("Reflection Disturb", Range(0.0, 1.0)) = 0.5
 		_WavesDisturb("Waves Disturb", Range(0.0, 1.0)) = 0.5
+		_DisturbSpeed("Disturb Speed", Range(0.0, 2.0)) = 1.0
+		
+		[Header(Wave Setting)][Space]
+		_WaveRange("Wave Range", Range(0.0, 5.0)) = 0.5
+		_WaveSpeed("Wave Speed", Range(0.0, 2.0)) = 1.0
 		
 		[Header(Blend Mode)][Space]
         // Set blend mode
@@ -47,6 +56,8 @@
 			HLSLPROGRAM
 
 			#pragma target 4.5
+
+			#pragma shader_feature _CS_SYNC_MAPPING
 			
 			#pragma vertex PlanarWaterPassVertex
 			#pragma fragment PlanarWaterPassFragment

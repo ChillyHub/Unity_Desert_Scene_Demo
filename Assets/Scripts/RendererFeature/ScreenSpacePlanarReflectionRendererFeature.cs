@@ -7,6 +7,7 @@ namespace CustomRenderer
     public class ScreenSpacePlanarReflectionRendererFeature : ScriptableRendererFeature
     {
         public ComputeShader computeShader;
+        public bool csThreadsSync = false;
 
         private ScreenSpacePlanarReflectionPass _pass;
 
@@ -25,7 +26,7 @@ namespace CustomRenderer
                 return;
             }
 
-            _pass.Setup(computeShader, RenderPassEvent.BeforeRenderingDeferredLights);
+            _pass.Setup(computeShader, csThreadsSync);
             renderer.EnqueuePass(_pass);
         }
     }

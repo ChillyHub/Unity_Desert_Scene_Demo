@@ -96,3 +96,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   computeShader: {fileID: 7200000, guid: 54bc6b0991e946bb894c8098504c7bec, type: 3}
+  csThreadsSync: 0
