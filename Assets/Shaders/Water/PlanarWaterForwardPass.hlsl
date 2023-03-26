@@ -140,15 +140,23 @@ half3 GetReflectionColor(PerMaterial pm, Surface surface)
     half3 reflectColor = SampleOpaqueTexture(biasReflectUV);
 
     UNITY_BRANCH
-    if (reflectUV.x < FLT_EPS && reflectUV.y < FLT_EPS)
+    if (biasReflectUV.x < FLT_EPS && biasReflectUV.y < FLT_EPS)
     {
         // Filled space by skybox
-        half3 left = SampleOpaqueTexture(biasReflectUV + float2(-0.001, 0.0));
-        half3 right = SampleOpaqueTexture(biasReflectUV + float2(0.001, 0.0));
-        half3 up = SampleOpaqueTexture(biasReflectUV + float2(0.0, -0.001));
-        half3 down = SampleOpaqueTexture(biasReflectUV + float2(0.0, 0.001));
+        float2 bias = 2.0 * rcp(GetScaledScreenParams().xy);
+        half3 left = SampleOpaqueTexture(biasReflectUV + float2(-1.0, 0.0) * bias);
+        half3 right = SampleOpaqueTexture(biasReflectUV + float2(1.0, 0.0) * bias);
+        half3 up = SampleOpaqueTexture(biasReflectUV + float2(0.0, -1.0) * bias);
+        half3 down = SampleOpaqueTexture(biasReflectUV + float2(0.0, 1.0) * bias);
 
-        reflectColor = (left + right + up + down) * 0.25;
+        half3 ur = SampleOpaqueTexture(biasReflectUV + float2(1.0, -1.0) * bias);
+        half3 ul = SampleOpaqueTexture(biasReflectUV + float2(-1.0, -1.0) * bias);
+        half3 dr = SampleOpaqueTexture(biasReflectUV + float2(1.0, 1.0) * bias);
+        half3 dl = SampleOpaqueTexture(biasReflectUV + float2(-1.0, 1.0) * bias);
+
+        //reflectColor = (left + right + up + down) * 0.25;
+        reflectColor = (left + right + up + down + ur + ul + dr + dl) * 0.125;
+        //return 0.0;
     }
 
     // TODO: Blur and sample skybox outside mask

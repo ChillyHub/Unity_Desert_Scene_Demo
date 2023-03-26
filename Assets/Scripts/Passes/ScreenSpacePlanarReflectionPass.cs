@@ -15,6 +15,7 @@ namespace CustomRenderer
         private bool _sync;
         
         private const string CsClearKernelName = "SSPRMappingCSClear";
+        private const string CsPreUVKernelName = "SSPRMappingCSPreUV";
         private const string CsMainKernelName = "SSPRMappingCSMain";
         private const string CsSyncKernelName = "SSPRMappingCSSync";
 
@@ -122,6 +123,18 @@ namespace CustomRenderer
                     _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
                     int groupX = Mathf.CeilToInt((float)width / (float)x);
                     int groupY = Mathf.CeilToInt((float)height / (float)y);
+                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    
+                    // Pre UV
+                    kernel = _cs.FindKernel(CsPreUVKernelName);
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, CameraDepthTextureId, new RenderTargetIdentifier(CameraDepthTextureId));
+                
+                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
+                    groupX = Mathf.CeilToInt((float)width / (float)x);
+                    groupY = Mathf.CeilToInt((float)height / (float)y);
                     cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
                     
                     // Mapping

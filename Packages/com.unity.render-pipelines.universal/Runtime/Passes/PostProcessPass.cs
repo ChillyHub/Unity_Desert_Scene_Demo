@@ -746,7 +746,6 @@ namespace UnityEngine.Rendering.Universal.Internal
         void DoScreenSpaceFog(ref CameraData cameraData, CommandBuffer cmd,
             RenderTargetIdentifier source, RenderTargetIdentifier destination)
         {
-            var camera = cameraData.camera;
             var material = m_Materials.screenSpaceFog;
 
             material.SetColor(ShaderConstants._FogColor, m_ScreenSpaceFog.fogColor.value);
@@ -768,14 +767,11 @@ namespace UnityEngine.Rendering.Universal.Internal
             material.SetFloat(ShaderConstants._gDayMie, m_ScreenSpaceFog.gDayMie.value);
             material.SetFloat(ShaderConstants._gNightMie, m_ScreenSpaceFog.gNightMie.value);
 
-            cmd.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
-            
+            cmd.SetGlobalTexture("_SourceTex", source);
             cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
-            DrawFullscreenMesh(cmd, material, 0);
-            
-            cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
+            cmd.Blit(source, destination, material, 0);
         }
 
         #endregion
@@ -1665,7 +1661,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 lensFlareDataDriven = Load(data.shaders.LensFlareDataDrivenPS);
                 
                 // CUSTOM:
-                screenSpaceFog = Load(Shader.Find("Assets/Shaders/Fog/ScreenSpaceFog.shader"));
+                screenSpaceFog = Load(data.shaders.screenSpaceFogPS);
             }
 
             Material Load(Shader shader)

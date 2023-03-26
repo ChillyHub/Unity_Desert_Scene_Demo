@@ -80,6 +80,10 @@ namespace UnityEngine.Rendering.Universal
 
             [Reload("Shaders/PostProcessing/FinalPost.shader")]
             public Shader finalPostPassPS;
+            
+            // CUSTOM:
+            [Reload("Shaders/PostProcessing/ScreenSpaceFog.shader")]
+            public Shader screenSpaceFogPS;
         }
 
         [Serializable, ReloadGroup]

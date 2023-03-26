@@ -18,7 +18,7 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter heightFogDensity = new ClampedFloatParameter(1.0f, 0.0f, 1.0f);
 
         [Header("Distance Fog Setting")] // Linear
-        public ClampedFloatParameter distanceFogMaxLength = new ClampedFloatParameter(1.0f, 0.0f, 1.0f);
+        public ClampedFloatParameter distanceFogMaxLength = new ClampedFloatParameter(500.0f, 0.0f, 1000.0f);
         public ClampedFloatParameter distanceFogDensity = new ClampedFloatParameter(1.0f, 0.0f, 1.0f);
 
         [Header("Scattering Setting")]
@@ -37,7 +37,7 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter gDayMie = new ClampedFloatParameter(0.75f, 0.5f, 0.9999f);
         public ClampedFloatParameter gNightMie = new ClampedFloatParameter(0.75f, 0.5f, 0.9999f);
 
-        public bool IsActive() => density.value <= float.Epsilon;
+        public bool IsActive() => density.value > float.Epsilon;
 
         public bool IsTileCompatible() => false;
     }
