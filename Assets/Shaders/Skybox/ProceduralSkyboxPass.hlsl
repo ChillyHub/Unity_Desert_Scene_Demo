@@ -153,7 +153,7 @@ float3 DrawMoon(PerMaterial d, float3 moonDir, float3 viewDir, float clamp = 0.0
     return d.moonColor * color * alpha;
 }
 
-float3 DrawClouds(PerMaterial d, float3 lightDir, float3 uv, out half cloudClamp)
+float3 DrawClouds(PerMaterial d, float3 sunDir, float3 moonDir, float3 uv, out half cloudClamp)
 {
     float u = atan2(uv.x, uv.z) * INV_TWO_PI + 0.5;
     float v = asin(uv.y) * INV_HALF_PI;
@@ -164,7 +164,7 @@ float3 DrawClouds(PerMaterial d, float3 lightDir, float3 uv, out half cloudClamp
     half noise = SampleCloudsNoiseTexture(uvNoise);
 
     half light = clouds1.r;
-    half edge = clouds1.g * saturate(dot(lightDir, uv));
+    half edge = clouds1.g * (saturate(dot(sunDir, uv)) + saturate(dot(moonDir, uv)));
     half display = step(d.cloudsThreshold + noise * 0.05, clouds1.b);
     half clamp = clouds1.a;
 
@@ -175,7 +175,7 @@ float3 DrawClouds(PerMaterial d, float3 lightDir, float3 uv, out half cloudClamp
         SampleCloudsPanoramicTexture(float2(frac(u + _Time.y * d.cloudsSpeed * 0.001), saturate((v - 0.02) * 3.0)));
 
     half3 color = colorAtlas1 +
-        panoramic * (1.0 - cloudClamp) * smoothstep(-0.5, 0.5, dot(lightDir, float3(0.0, 1.0, 0.0)));
+        panoramic * (1.0 - cloudClamp) * smoothstep(-0.5, 0.5, dot(sunDir, float3(0.0, 1.0, 0.0)));
 
     return color;
 }
@@ -212,29 +212,29 @@ Varyings ProceduralSkyboxPassVertex(Attributes input)
 
 float4 ProceduralSkyboxPassFragment(Varyings input) : SV_Target
 {
-    Light light = GetMainLight();
     PerMaterial data = GetPerMaterial();
     float3 viewDir = normalize(input.viewPosWS - input.positionWS);
-    float3 lightDir = light.direction;
+    float3 sunDir = _SunDir;
+    float3 moonDir = _MoonDir;
 
     // TODO: Get Base Skybox Color
-    float3 base = GetBaseSkyboxColor(data, lightDir, -lightDir, viewDir, input.baseUV);
+    float3 base = GetBaseSkyboxColor(data, sunDir, moonDir, viewDir, input.baseUV);
 
     // TODO: Draw Clouds and Stars
     float clamp;
-    float3 cloud = DrawClouds(data, lightDir, input.baseUV, clamp);
+    float3 cloud = DrawClouds(data, sunDir, moonDir, input.baseUV, clamp);
     float3 star = DrawStars(data, input.baseUV, clamp);
 
     // TODO: Get Mie Scattering Color
     //float3 mie = GetMieScatteringRayMarching(data, lightDir, viewDir);
-    float3 mie = GetMieScatteringColor(data, lightDir, -lightDir, viewDir, clamp);
+    float3 mie = GetMieScatteringColor(data, sunDir, moonDir, viewDir, clamp);
 
     // TODO: Draw Sun or Moon
-    float3 sun = DrawSun(data, lightDir, viewDir, clamp);
-    float3 moon = DrawMoon(data, -lightDir, viewDir, clamp);
-
+    float3 sun = DrawSun(data, sunDir, viewDir, clamp);
+    float3 moon = DrawMoon(data, moonDir, viewDir, clamp);
+    
     float3 color = base + mie + sun + moon + cloud + star;
-    // return float4(input.baseUV, 1.0);
+    
     return float4(min(color * data.exposure, 10.0), 1.0);
 }
 

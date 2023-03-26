@@ -49,6 +49,9 @@ CBUFFER_START(UnityPerMaterial)
     float _CloudsThreshold;
 
     float _StarsFlashSpeed;
+
+    float3 _SunDir;
+    float3 _MoonDir;
 CBUFFER_END
 
 const static float sThickness = 10000.0;

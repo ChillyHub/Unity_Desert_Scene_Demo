@@ -37,6 +37,14 @@ CBUFFER_START(_Terrain)
     int _ObjectId;
     int _PassValue;
     #endif
+
+    // CUSTOM:
+    half4 _FlashNoiseMap_ST;
+    float _FlashThreshold;
+    half4 _SandFlowMap_ST;
+    half4 _SandMaskTex_ST;
+    half3 _SandMaskColor;
+    float _SandFlowSpeed;
 CBUFFER_END
 
 
@@ -88,6 +96,38 @@ void ClipHoles(float2 uv)
     clip(hole == 0.0f ? -1 : 1);
 }
 #endif
+
+// CUSTOM:
+TEXTURE2D(_FlashNoiseMap);
+SAMPLER(sampler_FlashNoiseMap);
+TEXTURE2D(_SandFlowMap);
+SAMPLER(sampler_SandFlowMap);
+TEXTURE2D(_SandMaskTex);
+SAMPLER(sampler_SandMaskTex);
+
+half3 SampleFlashNoiseTexture(float2 uv)
+{
+    float2 coord = TRANSFORM_TEX(uv, _FlashNoiseMap);
+    return SAMPLE_TEXTURE2D(_FlashNoiseMap, sampler_FlashNoiseMap, coord).rgb;
+}
+
+half3 SampleSandFlowTexture(float2 uv)
+{
+    float2 coord = TRANSFORM_TEX(uv, _SandFlowMap);
+    return SAMPLE_TEXTURE2D(_SandFlowMap, sampler_SandFlowMap, coord).rgb;
+}
+
+half3 SampleSandFlowTexture(float2 uv, float2 bias)
+{
+    float2 coord = TRANSFORM_TEX(uv, _SandFlowMap) + bias;
+    return SAMPLE_TEXTURE2D(_SandFlowMap, sampler_SandFlowMap, coord).rgb;
+}
+
+half3 SampleSandMaskTexture(float2 uv)
+{
+    float2 coord = TRANSFORM_TEX(uv, _SandMaskTex);
+    return SAMPLE_TEXTURE2D(_SandMaskTex, sampler_SandMaskTex, coord).rgb;
+}
 
 half4 SampleMetallicSpecGloss(float2 uv, half albedoAlpha)
 {

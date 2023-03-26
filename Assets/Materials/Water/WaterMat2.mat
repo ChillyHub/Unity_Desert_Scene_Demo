@@ -117,7 +117,7 @@ Material:
     - _ReceiveShadows: 1
     - _ReflectionDisturb: 0.015
     - _RefractionDisturb: 0.023
-    - _Roughness: 0.0102
+    - _Roughness: 0.0029
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

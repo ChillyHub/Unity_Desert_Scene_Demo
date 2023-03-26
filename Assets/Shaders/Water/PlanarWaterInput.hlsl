@@ -95,7 +95,7 @@ float3 SampleNormalMap(float2 uv, bool flow = false)
     if (flow)
     {
         float2 dir = float2(cos(radians(_FlowDirection)), sin(radians(_FlowDirection)));
-        coord += 0.01 * _Time.y * _FlowSpeed * dir;
+        coord += frac(0.01 * _Time.y * _FlowSpeed * dir);
     }
     
     return UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, coord));
@@ -104,7 +104,7 @@ float3 SampleNormalMap(float2 uv, bool flow = false)
 half3 SampleDisturbNoiseTexture(float2 uv, bool flow = false)
 {
     float2 coord = TRANSFORM_TEX(uv, _DisturbNoise);
-    coord.x += lerp(0.0, 0.01 * _Time.y * _DisturbSpeed, flow);
+    coord.x += lerp(0.0, frac(0.01 * _Time.y * _DisturbSpeed), flow);
     
     return SAMPLE_TEXTURE2D(_DisturbNoise, sampler_DisturbNoise, coord).rgb;
 }
@@ -112,7 +112,7 @@ half3 SampleDisturbNoiseTexture(float2 uv, bool flow = false)
 half3 SampleWaveTexture(float2 uv, bool flow = false)
 {
     float2 coord = TRANSFORM_TEX(uv, _WaveTex);
-    coord.x += lerp(0.0, 0.1 * _Time.y * _WaveSpeed, flow);
+    coord.x += lerp(0.0, frac(0.1 * _Time.y * _WaveSpeed), flow);
     return SAMPLE_TEXTURE2D(_WaveTex, sampler_WaveTex, coord).rgb;
 }
 

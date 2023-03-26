@@ -235,6 +235,34 @@ Shader "Hidden/Universal Render Pipeline/StencilDeferred"
         return unityLight;
     }
 
+    // CUSTOM: Get Screen Space Edge Rim
+    half3 GetEdgeRimColor(Varyings input, InputData data, float3 color, float currDepth)
+    {
+        float3 normalCS = TransformWorldToHClipDir(data.normalWS, true);
+        float2 unitBias = normalCS.xy *
+            rcp(float2(1080.0 * GetScaledScreenParams().x / GetScaledScreenParams().y, 1080.0));
+        #if UNITY_REVERSED_Z
+        unitBias.y = -unitBias.y;
+        #endif
+        float2 biasUV = (input.screenUV.xy / input.screenUV.z) + unitBias * 3.0;
+        #if _RENDER_PASS_ENABLED
+        float mapDepth = LOAD_FRAMEBUFFER_INPUT(GBUFFER3, biasUV).x;
+        #else
+        float mapDepth = SAMPLE_TEXTURE2D_X_LOD(_CameraDepthTexture, my_point_clamp_sampler, biasUV, 0).x;
+        #endif
+
+        float currDepthEye = LinearEyeDepth(currDepth, _ZBufferParams);
+        float mapDepthEye = LinearEyeDepth(mapDepth, _ZBufferParams);
+        float currDepth01 = Linear01Depth(currDepth, _ZBufferParams);
+        float mapDepth01 = Linear01Depth(mapDepth, _ZBufferParams);
+
+        Light light = GetMainLight();
+        float isEdge = step(10.0, mapDepthEye - currDepthEye);
+        float finalColor = color * light.color * (dot(light.direction, -data.viewDirectionWS) + 1.0) *
+            smoothstep(0.0, 1.0, mapDepth01 - currDepth01);
+        return lerp(half3(0.0, 0.0, 0.0), finalColor, isEdge);
+    }
+
     half4 DeferredShading(Varyings input) : SV_Target
     {
         UNITY_SETUP_INSTANCE_ID(input);
@@ -325,6 +353,9 @@ Shader "Hidden/Universal Render Pipeline/StencilDeferred"
             // TODO: if !defined(_SPECGLOSSMAP) && !defined(_SPECULAR_COLOR), force specularColor to 0 in gbuffer code
             color = diffuseColor * surfaceData.albedo + specularColor;
         #endif
+
+        // CUSTOM: Add Screen Space Edge Rim
+        color += GetEdgeRimColor(input, inputData, color, d);
 
         return half4(color, alpha);
     }

@@ -2,7 +2,7 @@
 {
     Properties
     {
-        [HideInInspector] [ToggleUI] _EnableHeightBlend("EnableHeightBlend", Float) = 0.0
+        [ToggleUI] _EnableHeightBlend("EnableHeightBlend", Float) = 0.0
         _HeightTransition("Height Transition", Range(0, 1.0)) = 0.0
         // Layer count is passed down to guide height-blend enable/disable, due
         // to the fact that heigh-based blend will be broken with multipass.
@@ -38,6 +38,16 @@
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
 
         [ToggleUI] _EnableInstancedPerPixelNormal("Enable Instanced per-pixel normal", Float) = 1.0
+        
+        [Header(Flash Noise Setting)][Space]
+        _FlashNoiseMap("Flash Noise Texture", 2D) = "black" {}
+        _FlashThreshold("Flash Threshold", Range(0.001, 1.0)) = 0.5
+        
+        [Header(Flow Sands Setting)][Space]
+        _SandFlowMap("Sand Flow Texture", 2D) = "black" {}
+        _SandMaskTex("Sand Mask Texture", 2D) = "black" {}
+        _SandMaskColor("Sand Mask Color", Color) = (0.8, 0.8, 0.3)
+        _SandFlowSpeed("Sand Flow Speed", Range(0.0, 1.0)) = 0.5
     }
 
     HLSLINCLUDE
@@ -94,8 +104,8 @@
             // Sample normal in pixel shader when doing instancing
             #pragma shader_feature_local _TERRAIN_INSTANCED_PERPIXEL_NORMAL
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -122,8 +132,8 @@
             // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -173,8 +183,8 @@
             #pragma shader_feature_local _TERRAIN_INSTANCED_PERPIXEL_NORMAL
             #define TERRAIN_GBUFFER 1
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -195,8 +205,8 @@
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -217,8 +227,8 @@
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitDepthNormalsPass.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -237,8 +247,8 @@
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #define SCENESELECTIONPASS
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
             ENDHLSL
         }
 
@@ -260,7 +270,7 @@
             #define _METALLICSPECGLOSSMAP 1
             #define _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A 1
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitMetaPass.hlsl"
 
             ENDHLSL
@@ -271,8 +281,6 @@
     Dependency "AddPassShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Add Pass)"
     Dependency "BaseMapShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)"
     Dependency "BaseMapGenShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Basemap Gen)"
-
-    CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUI"
 
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
 }
