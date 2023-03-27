@@ -7,9 +7,9 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 
-
 CBUFFER_START(UnityPerMaterial)
-    half3 _FogColor;
+    half3 _FogColorDay;
+    half3 _FogColorNight;
     float _Density;
 
     float _HeightFogStart;
@@ -31,6 +31,9 @@ CBUFFER_START(UnityPerMaterial)
     float _NightScatteringFac;
     float _gDayMie;
     float _gNightMie;
+
+    float _DynamicFogHeight;
+    float _DynamicFogDensity;
 CBUFFER_END
 
 struct FogData
@@ -53,12 +56,14 @@ struct FogData
     float nightScatteringFac;
     float gDayMie;
     float gNightMie;
+    float dynamicFogHeight;
+    float dynamicFogDensity;
 };
 
 FogData GetFogData()
 {
     FogData o;
-    o.fogColor = _FogColor;
+    o.fogColor = _FogColorDay;
     o.density = _Density;
     o.heightFogStart = _HeightFogStart;
     o.heightFogDensity = _HeightFogDensity;
@@ -76,6 +81,17 @@ FogData GetFogData()
     o.nightScatteringFac = _NightScatteringFac;
     o.gDayMie = _gDayMie;
     o.gNightMie = _gNightMie;
+    o.dynamicFogHeight = _DynamicFogHeight;
+    o.dynamicFogDensity = _DynamicFogDensity;
+
+    return o;
+}
+
+FogData GetFogData(float3 sunDir)
+{
+    FogData o = GetFogData();
+    float3 fogColor = lerp(_FogColorNight, _FogColorDay, smoothstep(-0.2, 0.2, dot(sunDir, float3(0.0, 1.0, 0.0))));
+    o.fogColor = fogColor;
 
     return o;
 }
@@ -119,9 +135,38 @@ half3 GetScatteringFogColor(FogData fd, float3 sunDir, float3 moonDir, float3 vi
 
     return fd.scatteringFogDensity * (fd.dayScatteringFac * sunScattering + fd.nightScatteringFac * moonScattering);
 }
+float2 Hash(float2 st, int seed)
+{
+    float2 s = float2(dot(st, float2(127.1, 311.7)) + seed, dot(st, float2(269.5, 183.3)) + seed);
+    return -1 + 2 * frac(sin(s) * 43758.5453123);
+}
+
+float RandomNoise(float2 st, int seed)
+{
+    st.x -= _Time.y;
+
+    float2 p = floor(st);
+    float2 f = frac(st);
+ 
+    float w00 = dot(Hash(p, seed), f);
+    float w10 = dot(Hash(p + float2(1, 0), seed), f - float2(1, 0));
+    float w01 = dot(Hash(p + float2(0, 1), seed), f - float2(0, 1));
+    float w11 = dot(Hash(p + float2(1, 1), seed), f - float2(1, 1));
+				
+    float2 u = f * f * (3 - 2 * f);
+ 
+    return lerp(lerp(w00, w10, u.x), lerp(w01, w11, u.x), u.y);
+}
+
+half3 GetDynamicFogColor(FogData fd, float3 positionWS, float3 viewPosWS, float2 baseUV)
+{
+    float noise = RandomNoise(baseUV, 3);
+    return fd.fogColor * smoothstep(0.0, 2.0 * fd.dynamicFogHeight,
+        (viewPosWS.y + fd.dynamicFogHeight - positionWS.y)) * noise * fd.dynamicFogDensity;
+}
 
 half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS, float3 viewDirWS,
-    float3 positionWS, float3 viewPosWS)
+    float3 positionWS, float3 viewPosWS, float2 screenUV)
 {
     // TODO: Transmit Color
     float len = length(positionWS - viewPosWS);
@@ -136,17 +181,19 @@ half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDi
     // TODO: Get Scattering Fog Color
     half3 inScattering = GetScatteringFogColor(fd, sunDirWS, moonDirWS, viewDirWS, len);
 
-    return fd.density * (excintion + heightFog + distanceFog + inScattering);
+    half3 dynamicFog = GetDynamicFogColor(fd, positionWS, viewPosWS, screenUV);
+
+    return fd.density * (excintion + heightFog + distanceFog + inScattering + dynamicFog);
 }
 
 half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS,
-    float2 positionNDC, float deviceDepth)
+    float2 positionNDC, float deviceDepth, float2 screenUV)
 {
     float3 positioWS = ComputeWorldSpacePosition(positionNDC, deviceDepth, unity_MatrixInvVP);
     float3 viewPosWS = GetCameraPositionWS();
     float3 viewDirWS = normalize(viewPosWS - positioWS);
 
-    return GetFogColor(fd, sourceColor, sunDirWS, moonDirWS, viewDirWS, positioWS, viewPosWS);
+    return GetFogColor(fd, sourceColor, sunDirWS, moonDirWS, viewDirWS, positioWS, viewPosWS, screenUV);
 }
 
 #endif

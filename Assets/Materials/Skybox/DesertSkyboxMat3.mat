@@ -140,15 +140,15 @@ Material:
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _CloudsSpeed: 0
-    - _CloudsThreshold: 0
+    - _CloudsSpeed: -10
+    - _CloudsThreshold: 1
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EnvironmentReflections: 1
-    - _Exposure: 1.5
+    - _Exposure: 1.13
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -157,11 +157,11 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Scattering: 0.324
-    - _ScatteringBlueWave: 0.858
-    - _ScatteringGreenWave: 0.921
+    - _Scattering: 0.335
+    - _ScatteringBlueWave: 1
+    - _ScatteringGreenWave: 0.488
     - _ScatteringMoon: 0.5
-    - _ScatteringRedWave: 1
+    - _ScatteringRedWave: 0.164
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -179,12 +179,12 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _CloudsColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _DayColor: {r: 0.11764705, g: 0.13045728, b: 1, a: 1}
+    - _DayColor: {r: 0.20754719, g: 0.07825549, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _HorizDayColor: {r: 0.28403345, g: 0.28534687, b: 0.764151, a: 1}
-    - _HorizNightColor: {r: 0, g: 0.02289708, b: 0.11372549, a: 1}
-    - _MoonColor: {r: 0, g: 0.8290131, b: 1, a: 1}
-    - _NightColor: {r: 0.002505467, g: 0, b: 0.11372549, a: 1}
+    - _HorizDayColor: {r: 0.14150941, g: 0.04468718, b: 0, a: 1}
+    - _HorizNightColor: {r: 0.122641504, g: 0.018974714, b: 0.05258568, a: 1}
+    - _MoonColor: {r: 0, g: 0.1981132, b: 0.12029163, a: 1}
+    - _NightColor: {r: 0.084905684, g: 0.002491401, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _SunColor: {r: 1, g: 0.7341133, b: 0.19999999, a: 1}
+    - _SunColor: {r: 1, g: 0.5140031, b: 0.19999999, a: 1}
   m_BuildTextureStacks: []

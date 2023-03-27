@@ -234,8 +234,9 @@ float4 ProceduralSkyboxPassFragment(Varyings input) : SV_Target
     float3 moon = DrawMoon(data, moonDir, viewDir, clamp);
     
     float3 color = base + mie + sun + moon + cloud + star;
+    color = base + mie + sun + moon + cloud + star;
     
-    return float4(min(color * data.exposure, 10.0), 1.0);
+    return float4(color * data.exposure, 1.0);
 }
 
 #endif

@@ -34,7 +34,7 @@ Shader "Custom/Skybox/Procedural Skybox"
 		_CloudsPanoramic("Clouds Panoramic", 2D) = "black" {}
 		_CloudsNoise("Clouds Noise", 2D) = "black" {}
 		[HDR] _CloudsColor("Clouds Color", Color) = (1.0, 1.0, 1.0, 1.0)
-		_CloudsSpeed("Clouds Speed", Range(0.0, 10.0)) = 1.0
+		_CloudsSpeed("Clouds Speed", Range(-10.0, 10.0)) = 1.0
 		_CloudsThreshold("Clouds Display Threshold", Range(0.0, 1.0)) = 0.0
 		
 		[Header(Stars Setting)][Space]

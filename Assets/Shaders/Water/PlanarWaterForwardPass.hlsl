@@ -33,6 +33,7 @@ struct Surface
     float4 positionNDC;
     float3 normalWS;
     float3 bumpWS;
+    float3 lightColor;
     float3 lightDirWS;
     float3 viewDirWS;
     float3 normalReflectDirWS;
@@ -62,6 +63,7 @@ Surface GetSurface(Varyings i, PerMaterial pm)
     o.bumpWS = mul(normalTS, float3x3(i.tangentWS, i.bitangentWS, i.normalWS));
 
     Light light = GetMainLight();
+    o.lightColor = light.color;
     o.lightDirWS = light.direction;
     o.viewDirWS = normalize(GetCameraPositionWS() - i.positionWS);
     o.normalReflectDirWS = reflect(-o.viewDirWS, o.normalWS);
@@ -170,7 +172,7 @@ half3 GetReflectionColor(PerMaterial pm, Surface surface)
     brdf.roughness2MinusOne = brdf.roughness2 - 1.0;
     brdf.normalizationTerm = brdf.roughness * 4.0 + 2.0;
     half3 specular = DirectBRDFSpecular(brdf, surface.bumpWS, surface.lightDirWS, surface.viewDirWS);
-    reflectColor += specular;
+    reflectColor += specular * surface.lightColor;
 
     return reflectColor;
 }

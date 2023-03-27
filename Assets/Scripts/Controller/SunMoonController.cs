@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.UIElements;
 
 namespace Controller
 {
@@ -15,6 +16,12 @@ namespace Controller
 
         public Material[] skyboxMaterials;
 
+        public bool autoRotateSun = false;
+        [Range(0.0f, 1.0f)]
+        public float autoRotateSpeed = 0.5f;
+
+        public bool inverse = false;
+
         private void Update()
         {
             if (sun != null)
@@ -23,10 +30,12 @@ namespace Controller
                 if (Vector3.Dot(-sun.transform.forward, Vector3.up) < 0.0f)
                 {
                     sun.intensity = 0.0f;
+                    sun.enabled = false;
                 }
                 else
                 {
                     sun.intensity = 1.0f;
+                    sun.enabled = true;
                 }
             }
 
@@ -36,10 +45,12 @@ namespace Controller
                 if (Vector3.Dot(-moon.transform.forward, Vector3.up) < 0.0f)
                 {
                     moon.intensity = 0.0f;
+                    moon.enabled = false;
                 }
                 else
                 {
                     moon.intensity = 0.4f;
+                    moon.enabled = true;
                 }
             }
 
@@ -47,6 +58,20 @@ namespace Controller
             {
                 material.SetVector("_SunDir", -(Vector4)sun.transform.forward);
                 material.SetVector("_MoonDir", -(Vector4)moon.transform.forward);
+            }
+
+            if (autoRotateSun)
+            {
+                float delta = Time.deltaTime * 60.0f * autoRotateSpeed * (inverse ? -1.0f : 1.0f);
+                rotation.x += delta;
+                if (rotation.x > 360.0f)
+                {
+                    rotation.x -= 360.0f;
+                }
+                else if (rotation.x < -360.0f)
+                {
+                    rotation.x += 360.0f;
+                }
             }
         }
     }

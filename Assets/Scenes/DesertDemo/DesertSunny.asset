@@ -62,7 +62,7 @@ MonoBehaviour:
     m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.8
   scatter:
     m_OverrideState: 0
     m_Value: 0.7
@@ -98,9 +98,12 @@ MonoBehaviour:
   m_Name: ScreenSpaceFog
   m_EditorClassIdentifier: 
   active: 1
-  fogColor:
+  fogColorDay:
     m_OverrideState: 1
-    m_Value: {r: 0.6226415, g: 0.39274874, b: 0.2666785, a: 1}
+    m_Value: {r: 0.40943396, g: 0.45759764, b: 1, a: 1}
+  fogColorNight:
+    m_OverrideState: 1
+    m_Value: {r: 0.09015857, g: 0.04549661, b: 0.16981131, a: 1}
   density:
     m_OverrideState: 1
     m_Value: 1
@@ -112,7 +115,7 @@ MonoBehaviour:
     m_Value: 1
   distanceFogMaxLength:
     m_OverrideState: 1
-    m_Value: 507
+    m_Value: 1000
   distanceFogDensity:
     m_OverrideState: 0
     m_Value: 1
@@ -121,7 +124,7 @@ MonoBehaviour:
     m_Value: {r: 1, g: 0.56274235, b: 0.135849, a: 1}
   nightScatteringColor:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0, b: 0, a: 1}
+    m_Value: {r: 0.12433247, g: 0.2214929, b: 0.5188679, a: 1}
   scattering:
     m_OverrideState: 1
     m_Value: 0.506
@@ -145,13 +148,19 @@ MonoBehaviour:
     m_Value: 1
   nightScatteringFac:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.504
   gDayMie:
     m_OverrideState: 0
     m_Value: 0.75
   gNightMie:
     m_OverrideState: 0
     m_Value: 0.75
+  dynamicFogHeight:
+    m_OverrideState: 0
+    m_Value: 5
+  dynamicFogDensity:
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

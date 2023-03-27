@@ -748,7 +748,8 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             var material = m_Materials.screenSpaceFog;
 
-            material.SetColor(ShaderConstants._FogColor, m_ScreenSpaceFog.fogColor.value);
+            material.SetColor(ShaderConstants._FogColorDay, m_ScreenSpaceFog.fogColorDay.value);
+            material.SetColor(ShaderConstants._FogColorNight, m_ScreenSpaceFog.fogColorNight.value);
             material.SetFloat(ShaderConstants._Density, m_ScreenSpaceFog.density.value);
             material.SetFloat(ShaderConstants._HeightFogStart, m_ScreenSpaceFog.heightFogStart.value);
             material.SetFloat(ShaderConstants._HeightFogDensity, m_ScreenSpaceFog.heightFogDensity.value);
@@ -766,6 +767,8 @@ namespace UnityEngine.Rendering.Universal.Internal
             material.SetFloat(ShaderConstants._NightScatteringFac, m_ScreenSpaceFog.nightScatteringFac.value);
             material.SetFloat(ShaderConstants._gDayMie, m_ScreenSpaceFog.gDayMie.value);
             material.SetFloat(ShaderConstants._gNightMie, m_ScreenSpaceFog.gNightMie.value);
+            material.SetFloat(ShaderConstants._DynamicFogHeight, m_ScreenSpaceFog.dynamicFogHeight.value);
+            material.SetFloat(ShaderConstants._DynamicFogDensity, m_ScreenSpaceFog.dynamicFogDensity.value);
 
             cmd.SetGlobalTexture("_SourceTex", source);
             cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
@@ -1759,7 +1762,8 @@ namespace UnityEngine.Rendering.Universal.Internal
             public static readonly int _UpscaledTexture = Shader.PropertyToID("_UpscaledTexture");
 
             // CUSTOM: 
-            public static readonly int _FogColor = Shader.PropertyToID("_FogColor");
+            public static readonly int _FogColorDay = Shader.PropertyToID("_FogColorDay");
+            public static readonly int _FogColorNight = Shader.PropertyToID("_FogColorNight");
             public static readonly int _Density = Shader.PropertyToID("_Density");
             public static readonly int _HeightFogStart = Shader.PropertyToID("_HeightFogStart");
             public static readonly int _HeightFogDensity = Shader.PropertyToID("_HeightFogDensity");
@@ -1777,6 +1781,8 @@ namespace UnityEngine.Rendering.Universal.Internal
             public static readonly int _NightScatteringFac = Shader.PropertyToID("_NightScatteringFac");
             public static readonly int _gDayMie = Shader.PropertyToID("_gDayMie");
             public static readonly int _gNightMie = Shader.PropertyToID("_gNightMie");
+            public static readonly int _DynamicFogHeight = Shader.PropertyToID("_DynamicFogHeight");
+            public static readonly int _DynamicFogDensity = Shader.PropertyToID("_DynamicFogDensity");
 
             public static int[] _BloomMipUp;
             public static int[] _BloomMipDown;

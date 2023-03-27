@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97c23e3b12dc18c42a140437e53d3951, type: 3}
   m_Name: Tonemapping
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 2
 --- !u!114 &-7153957369393295474
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -98,23 +98,26 @@ MonoBehaviour:
   m_Name: ScreenSpaceFog
   m_EditorClassIdentifier: 
   active: 1
-  fogColor:
+  fogColorDay:
     m_OverrideState: 1
-    m_Value: {r: 0.6226415, g: 0.39274874, b: 0.2666785, a: 1}
+    m_Value: {r: 0.11320752, g: 0.053149346, b: 0.016447127, a: 1}
+  fogColorNight:
+    m_OverrideState: 1
+    m_Value: {r: 0.05660379, g: 0.030731583, b: 0.022107515, a: 1}
   density:
     m_OverrideState: 1
     m_Value: 1
   heightFogStart:
     m_OverrideState: 1
-    m_Value: 1000
+    m_Value: 77
   heightFogDensity:
     m_OverrideState: 0
     m_Value: 1
   distanceFogMaxLength:
     m_OverrideState: 1
-    m_Value: 507
+    m_Value: 95
   distanceFogDensity:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 1
   dayScatteringColor:
     m_OverrideState: 1
@@ -124,13 +127,13 @@ MonoBehaviour:
     m_Value: {r: 0, g: 0, b: 0, a: 1}
   scattering:
     m_OverrideState: 1
-    m_Value: 0.506
+    m_Value: 0.733
   scatteringRedWave:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.45
   scatteringGreenWave:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.713
   scatteringBlueWave:
     m_OverrideState: 1
     m_Value: 1
@@ -139,7 +142,7 @@ MonoBehaviour:
     m_Value: 0
   scatteringFogDensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   dayScatteringFac:
     m_OverrideState: 1
     m_Value: 1
@@ -152,6 +155,12 @@ MonoBehaviour:
   gNightMie:
     m_OverrideState: 0
     m_Value: 0.75
+  dynamicFogHeight:
+    m_OverrideState: 1
+    m_Value: 10
+  dynamicFogDensity:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
