@@ -45,6 +45,11 @@ CBUFFER_START(_Terrain)
     half4 _SandMaskTex_ST;
     half3 _SandMaskColor;
     float _SandFlowSpeed;
+    // CUSTOM:
+    float3 _OriginalPosition;
+    float _RecordDistance;
+    float4 _PathRecordTexture_TexelSize;
+    float _HeightVaryings;
 CBUFFER_END
 
 
@@ -104,6 +109,9 @@ TEXTURE2D(_SandFlowMap);
 SAMPLER(sampler_SandFlowMap);
 TEXTURE2D(_SandMaskTex);
 SAMPLER(sampler_SandMaskTex);
+
+TEXTURE2D(_PathRecordTexture);
+SAMPLER(sampler_PathRecordTexture);
 
 half3 SampleFlashNoiseTexture(float2 uv)
 {

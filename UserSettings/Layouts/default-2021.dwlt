@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2048
     height: 1060.8
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: Scene
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -360,7 +360,7 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: c2790000
+      m_SelectedIDs: 
       m_LastClickedID: 0
       m_ExpandedIDs: 1efbffff
       m_RenameOverlay:
@@ -674,9 +674,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 97.91661, y: -4.7004976, z: 85.34576}
+    m_Target: {x: 170.19666, y: -25.46874, z: 64.39589}
     speed: 2
-    m_Value: {x: 97.91661, y: -4.7004976, z: 85.34576}
+    m_Value: {x: 170.19666, y: -25.46874, z: 64.39589}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -715,17 +715,17 @@ MonoBehaviour:
       m_Fade:
         m_Target: 0
         speed: 2
-        m_Value: 0
+        m_Value: 1
       m_Color: {r: 0.5, g: 0.5, b: 0.5, a: 0.4}
       m_Pivot: {x: 0, y: 0, z: 0}
-      m_Size: {x: 0, y: 0}
+      m_Size: {x: 1, y: 1}
     m_ShowGrid: 1
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.09739383, y: -0.2241609, z: 0.021557162, w: 0.96955127}
+    m_Target: {x: -0.28567415, y: -0.20078461, z: 0.062381916, w: -0.93511766}
     speed: 2
-    m_Value: {x: 0.09883675, y: -0.22410275, z: 0.02189103, w: 0.96929365}
+    m_Value: {x: 0.28567415, y: 0.2007846, z: -0.062381912, w: 0.9351177}
   m_Size:
     m_Target: 29.51414
     speed: 2
@@ -747,7 +747,7 @@ MonoBehaviour:
     m_FarClip: 10000
     m_DynamicClip: 0
     m_OcclusionCulling: 0
-  m_LastSceneViewRotation: {x: 0, y: 0, z: 0, w: 0}
+  m_LastSceneViewRotation: {x: -0.28567415, y: -0.20078461, z: 0.062381916, w: -0.93511766}
   m_LastSceneViewOrtho: 0
   m_ReplacementShader: {fileID: 0}
   m_ReplacementString: 
@@ -918,22 +918,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Textures/Water/Noise
+    - Assets
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Textures/Water/Noise
+  - Assets
   m_LastFoldersGridSize: -1
   m_LastProjectPath: D:\Projects\Unity\TA_Test_Project\Mihoyo1\Unity_Desert_Scene_Demo
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 444.59998}
-    m_SelectedIDs: c2790000
-    m_LastClickedID: 31170
-    m_ExpandedIDs: 00000000b26a0000b46a0000b66a0000b86a0000ba6a0000bc6a0000be6a0000c06a0000806c00009c6c000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 79}
+    m_SelectedIDs: b26a0000
+    m_LastClickedID: 27314
+    m_ExpandedIDs: 00000000b26a0000b46a0000b66a0000b86a0000ba6a0000bc6a0000be6a0000c06a0000846c000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -988,7 +988,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 1
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0

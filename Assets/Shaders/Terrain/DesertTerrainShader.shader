@@ -48,6 +48,9 @@
         _SandMaskTex("Sand Mask Texture", 2D) = "black" {}
         _SandMaskColor("Sand Mask Color", Color) = (0.8, 0.8, 0.3)
         _SandFlowSpeed("Sand Flow Speed", Range(0.0, 1.0)) = 0.5
+        
+        [Header(Height Varyings)][Space]
+        _HeightVaryings("Height Varyings", Range(0.0, 2.0)) = 1.0
     }
 
     HLSLINCLUDE
@@ -144,9 +147,14 @@
 
             HLSLPROGRAM
             #pragma exclude_renderers gles
-            #pragma target 3.0
-            #pragma vertex SplatmapVert
-            #pragma fragment SplatmapFragment
+            //#pragma target 3.0
+            //#pragma vertex SplatmapVert
+            //#pragma fragment SplatmapFragment
+            #pragma target 4.5
+            #pragma vertex TessSplatmapVert
+            #pragma hull TessSplatmapHull
+            #pragma domain TessSplatmapDomain
+            #pragma fragment TessSplatmapFragment
 
             #define _METALLICSPECGLOSSMAP 1
             #define _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A 1
@@ -173,8 +181,8 @@
             #pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
 
             //#pragma multi_compile_fog
-            #pragma multi_compile_instancing
-            #pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
+            //#pragma multi_compile_instancing
+            //#pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #pragma shader_feature_local _TERRAIN_BLEND_HEIGHT
             #pragma shader_feature_local _NORMALMAP
@@ -185,6 +193,7 @@
 
             #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
             #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
+            #include "Assets/Shaders/Terrain/DesertTerrainTesselationLitPass.hlsl"
             ENDHLSL
         }
 
@@ -228,7 +237,7 @@
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #include "Assets/Shaders/Terrain/DesertTerrainInput.hlsl"
-            #include "Assets/Shaders/Terrain/DesertTerrainLitPass.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitDepthNormalsPass.hlsl"
             ENDHLSL
         }
 
@@ -275,6 +284,27 @@
 
             ENDHLSL
         }
+        
+        // CUSTOM: 
+        Pass
+		{
+			Name "Custom Depth Pass"
+			Tags { "LightMode"="CustomDepth" }
+			
+			Cull front
+			ZTest GEqual
+			
+			HLSLPROGRAM
+
+			#pragma target 4.5
+
+			#pragma vertex CustomDepthVertex
+			#pragma fragment CustomDepthFragment
+
+			#include "Assets/Shaders/PathRecord/CustomDepthPass.hlsl"
+			
+			ENDHLSL	
+		}
 
         UsePass "Hidden/Nature/Terrain/Utilities/PICKING"
     }
