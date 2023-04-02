@@ -12,8 +12,10 @@ namespace CustomRenderer
     {
         public BoolParameter enable = new BoolParameter(false, true);
 
-        public Vector3Parameter planePosition = new Vector3Parameter(Vector3.zero);
-        public Vector3Parameter planeNormal = new Vector3Parameter(Vector3.up);
+        [NonSerialized]
+        public Vector3 PlanePosition = Vector3.zero;
+        [NonSerialized]
+        public Vector3 PlaneNormal = Vector3.up;
 
         public bool IsActive() => enable.value;
 

@@ -12,8 +12,6 @@ SAMPLER(sampler_WaveTex);
 
 TEXTURE2D(_UVMappingTexture);
 SAMPLER(sampler_UVMappingTexture);
-TEXTURE2D(_UVSyncMappingTexture);
-SAMPLER(sampler_UVSyncMappingTexture);
 TEXTURE2D(_CameraDepthTexture);
 SAMPLER(sampler_CameraDepthTexture);
 TEXTURE2D(_CameraOpaqueTexture);
@@ -79,14 +77,6 @@ PerMaterial GetPerMaterial()
     return o;
 }
 
-float2 DecodePackedUV(uint n)
-{
-    uint x = n & 0xffff;
-    uint y = n >> 16;
-
-    return float2((float)x, (float)y);
-}
-
 float3 SampleNormalMap(float2 uv, bool flow = false)
 {
     float2 coord = TRANSFORM_TEX(uv, _NormalMap);
@@ -116,14 +106,9 @@ half3 SampleWaveTexture(float2 uv, bool flow = false)
     return SAMPLE_TEXTURE2D(_WaveTex, sampler_WaveTex, coord).rgb;
 }
 
-float2 SampleUVMappingTexture(float2 screenPosition)
+float2 SampleUVMappingTexture(float2 uv)
 {
-#if defined(_CS_SYNC_MAPPING)
-    uint n = _UVSyncMappingTexture[(uint2)screenPosition].x;
-    return DecodePackedUV(n);
-#else
-    return _UVMappingTexture[(uint2)screenPosition].xy;
-#endif
+    return SAMPLE_TEXTURE2D(_UVMappingTexture, sampler_UVMappingTexture, uv).rg;
 }
 
 float SampleDepthTexture(float2 uv)

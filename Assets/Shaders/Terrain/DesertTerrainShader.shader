@@ -181,8 +181,8 @@
             #pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
 
             //#pragma multi_compile_fog
-            //#pragma multi_compile_instancing
-            //#pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma multi_compile_instancing
+            #pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #pragma shader_feature_local _TERRAIN_BLEND_HEIGHT
             #pragma shader_feature_local _NORMALMAP

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Controller
+namespace Component
 {
     [ExecuteAlways]
     public class Recorder : MonoBehaviour

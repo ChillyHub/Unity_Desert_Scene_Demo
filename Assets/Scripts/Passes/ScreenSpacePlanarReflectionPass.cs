@@ -15,9 +15,12 @@ namespace CustomRenderer
         private bool _sync;
         
         private const string CsClearKernelName = "SSPRMappingCSClear";
+        private const string CsSyncClearKernelName = "SSPRMappingCSSyncClear";
         private const string CsPreUVKernelName = "SSPRMappingCSPreUV";
         private const string CsMainKernelName = "SSPRMappingCSMain";
         private const string CsSyncKernelName = "SSPRMappingCSSync";
+        private const string CsSyncResolveKernelName = "SSPRMappingCSSyncResolve";
+        private const string CsFillHoleKernelName = "SSPRFillHole";
 
         private static readonly int UVMappingTextureId = Shader.PropertyToID("_UVMappingTexture");
         private static readonly int UVSyncMappingTextureId = Shader.PropertyToID("_UVSyncMappingTexture");
@@ -39,10 +42,17 @@ namespace CustomRenderer
             var data = renderingData.cameraData.cameraTargetDescriptor;
             int width = data.width;
             int height = data.height;
+            
+            _descriptor = new RenderTextureDescriptor(width, height, RenderTextureFormat.RG32, 0);
+            _descriptor.colorFormat = RenderTextureFormat.RG32;
+            _descriptor.enableRandomWrite = true;
+            _descriptor.sRGB = false;
+
+            cmd.GetTemporaryRT(UVMappingTextureId, _descriptor);
 
             if (_sync)
             {
-                _descriptor = new RenderTextureDescriptor(width, height, RenderTextureFormat.RInt, 0);
+                _descriptor = new RenderTextureDescriptor(width, height, RenderTextureFormat.RInt, 0, 0);
                 _descriptor.colorFormat = RenderTextureFormat.RInt;
                 _descriptor.enableRandomWrite = true;
                 _descriptor.sRGB = false;
@@ -53,13 +63,6 @@ namespace CustomRenderer
             }
             else
             {
-                _descriptor = new RenderTextureDescriptor(width, height, RenderTextureFormat.RG32, 0);
-                _descriptor.colorFormat = RenderTextureFormat.RG32;
-                _descriptor.enableRandomWrite = true;
-                _descriptor.sRGB = false;
-
-                cmd.GetTemporaryRT(UVMappingTextureId, _descriptor);
-                
                 Shader.SetKeyword(GlobalKeyword.Create("_CS_SYNC_MAPPING"), false);
             }
         }
@@ -75,30 +78,21 @@ namespace CustomRenderer
             CommandBuffer cmd = CommandBufferPool.Get();
             using (new ProfilingScope(cmd, _profilingSampler))
             {
-                // Ensure we flush our command-buffer before we render...
-                context.ExecuteCommandBuffer(cmd);
-                cmd.Clear();
-                
                 // Update
                 int width = _descriptor.width;
                 int height = _descriptor.height;
                 cmd.SetComputeFloatParam(_cs, UVMappingWidth, width);
                 cmd.SetComputeFloatParam(_cs, UVMappingHeight, height);
-                cmd.SetComputeVectorParam(_cs, PlanePositionId, (Vector4)volume.planePosition.value);
-                cmd.SetComputeVectorParam(_cs, PlaneNormalId, (Vector4)volume.planeNormal.value);
+                cmd.SetComputeVectorParam(_cs, PlanePositionId, (Vector4)volume.PlanePosition);
+                cmd.SetComputeVectorParam(_cs, PlaneNormalId, (Vector4)volume.PlaneNormal);
                 
                 if (_sync)
                 {
                     // Clear
-                    int kernel = _cs.FindKernel(CsClearKernelName);
+                    int kernel = _cs.FindKernel(CsSyncClearKernelName);
                     cmd.SetComputeTextureParam(
                         _cs, kernel, UVSyncMappingTextureId, new RenderTargetIdentifier(UVSyncMappingTextureId));
-                
-                    uint x, y, z;
-                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-                    int groupX = Mathf.CeilToInt((float)width / (float)x);
-                    int groupY = Mathf.CeilToInt((float)height / (float)y);
-                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    Dispatch(cmd, _cs, kernel, width, height);
                     
                     // Mapping
                     kernel = _cs.FindKernel(CsSyncKernelName);
@@ -106,11 +100,21 @@ namespace CustomRenderer
                         _cs, kernel, UVSyncMappingTextureId, new RenderTargetIdentifier(UVSyncMappingTextureId));
                     cmd.SetComputeTextureParam(
                         _cs, kernel, CameraDepthTextureId, new RenderTargetIdentifier(CameraDepthTextureId));
-                
-                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-                    groupX = Mathf.CeilToInt((float)width / (float)x);
-                    groupY = Mathf.CeilToInt((float)height / (float)y);
-                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    Dispatch(cmd, _cs, kernel, width, height);
+                    
+                    // Resolve
+                    kernel = _cs.FindKernel(CsSyncResolveKernelName);
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, UVSyncMappingTextureId, new RenderTargetIdentifier(UVSyncMappingTextureId));
+                    Dispatch(cmd, _cs, kernel, width, height);
+                    
+                    // Fill hole
+                    kernel = _cs.FindKernel(CsFillHoleKernelName);
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
+                    Dispatch(cmd, _cs, kernel, width, height);
                 }
                 else
                 {
@@ -118,12 +122,7 @@ namespace CustomRenderer
                     int kernel = _cs.FindKernel(CsClearKernelName);
                     cmd.SetComputeTextureParam(
                         _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
-                
-                    uint x, y, z;
-                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-                    int groupX = Mathf.CeilToInt((float)width / (float)x);
-                    int groupY = Mathf.CeilToInt((float)height / (float)y);
-                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    Dispatch(cmd, _cs, kernel, width, height);
                     
                     // Pre UV
                     kernel = _cs.FindKernel(CsPreUVKernelName);
@@ -131,11 +130,7 @@ namespace CustomRenderer
                         _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
                     cmd.SetComputeTextureParam(
                         _cs, kernel, CameraDepthTextureId, new RenderTargetIdentifier(CameraDepthTextureId));
-                
-                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-                    groupX = Mathf.CeilToInt((float)width / (float)x);
-                    groupY = Mathf.CeilToInt((float)height / (float)y);
-                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    Dispatch(cmd, _cs, kernel, width, height);
                     
                     // Mapping
                     kernel = _cs.FindKernel(CsMainKernelName);
@@ -143,11 +138,13 @@ namespace CustomRenderer
                         _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
                     cmd.SetComputeTextureParam(
                         _cs, kernel, CameraDepthTextureId, new RenderTargetIdentifier(CameraDepthTextureId));
-                
-                    _cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-                    groupX = Mathf.CeilToInt((float)width / (float)x);
-                    groupY = Mathf.CeilToInt((float)height / (float)y);
-                    cmd.DispatchCompute(_cs, kernel, groupX, groupY, 1);
+                    Dispatch(cmd, _cs, kernel, width, height);
+                    
+                    // Fill hole
+                    kernel = _cs.FindKernel(CsFillHoleKernelName);
+                    cmd.SetComputeTextureParam(
+                        _cs, kernel, UVMappingTextureId, new RenderTargetIdentifier(UVMappingTextureId));
+                    Dispatch(cmd, _cs, kernel, width, height);
                 }
             }
             context.ExecuteCommandBuffer(cmd);
@@ -159,7 +156,11 @@ namespace CustomRenderer
             if (cmd == null)
                 throw new System.ArgumentNullException("cmd");
 
-            cmd.ReleaseTemporaryRT(_sync ? UVSyncMappingTextureId : UVMappingTextureId);
+            cmd.ReleaseTemporaryRT(UVMappingTextureId);
+            if (_sync)
+            {
+                cmd.ReleaseTemporaryRT(UVSyncMappingTextureId);
+            }
         }
 
         public void Setup(ComputeShader cs, bool sync)
@@ -167,6 +168,15 @@ namespace CustomRenderer
             this.renderPassEvent = RenderPassEvent.BeforeRenderingDeferredLights;
             _cs = cs;
             _sync = sync;
+        }
+
+        void Dispatch(CommandBuffer cmd, ComputeShader cs, int kernel, int width, int height)
+        {
+            uint x, y, z;
+            cs.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
+            int groupX = Mathf.CeilToInt((float)width / (float)x);
+            int groupY = Mathf.CeilToInt((float)height / (float)y);
+            cmd.DispatchCompute(cs, kernel, groupX, groupY, 1);
         }
     }
 }
