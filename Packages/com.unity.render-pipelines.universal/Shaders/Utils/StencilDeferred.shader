@@ -258,8 +258,8 @@ Shader "Hidden/Universal Render Pipeline/StencilDeferred"
 
         Light light = GetMainLight();
         float isEdge = step(10.0, mapDepthEye - currDepthEye);
-        float finalColor = color * light.color * (dot(light.direction, -data.viewDirectionWS) + 1.0) *
-            smoothstep(0.0, 1.0, mapDepth01 - currDepth01);
+        float finalColor = color * light.color * (dot(-light.direction, data.viewDirectionWS) * 0.5 + 0.5) *
+            smoothstep(0.0, 1.0, (mapDepth01 - currDepth01) * 2.0) * 1.5;
         return lerp(half3(0.0, 0.0, 0.0), finalColor, isEdge);
     }
 

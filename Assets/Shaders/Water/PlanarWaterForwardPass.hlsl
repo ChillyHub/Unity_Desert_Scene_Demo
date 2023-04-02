@@ -140,24 +140,6 @@ half3 GetReflectionColor(PerMaterial pm, Surface surface)
     
     half3 reflectColor = SampleOpaqueTexture(biasReflectUV);
 
-    UNITY_BRANCH
-    if (biasReflectUV.x < 0.0 && biasReflectUV.y < 0.0)
-    {
-        // Filled space by skybox
-        float2 bias = 8.0 * rcp(GetScaledScreenParams().xy);
-        half3 left = SampleOpaqueTexture(biasReflectUV + float2(-1.0, 0.0) * bias);
-        half3 right = SampleOpaqueTexture(biasReflectUV + float2(1.0, 0.0) * bias);
-        half3 up = SampleOpaqueTexture(biasReflectUV + float2(0.0, -1.0) * bias);
-        half3 down = SampleOpaqueTexture(biasReflectUV + float2(0.0, 1.0) * bias);
-
-        half3 ur = SampleOpaqueTexture(biasReflectUV + float2(1.0, -1.0) * bias);
-        half3 ul = SampleOpaqueTexture(biasReflectUV + float2(-1.0, -1.0) * bias);
-        half3 dr = SampleOpaqueTexture(biasReflectUV + float2(1.0, 1.0) * bias);
-        half3 dl = SampleOpaqueTexture(biasReflectUV + float2(-1.0, 1.0) * bias);
-        
-        reflectColor = (left + right + up + down + ur + ul + dr + dl) * 0.125;
-    }
-
     // TODO: Blur and sample skybox outside mask
     float mask = GetSDFMask(biasReflectUV);
     half3 skybox = GlossyEnvironmentReflection(surface.bumpReflectDirWS, 0.0h, 1.0h);

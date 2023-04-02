@@ -101,7 +101,7 @@ PatchTess ConstantHS(InputPatch<VertexOut, 3> patch, uint patchID : SV_Primitive
     const float near = 5.0f;
     const float far = 20.0f;
     float dist = distance(GetCameraPositionWS(), centerWS);
-    float tess = 64.0f * clamp((far - dist) / (far - near), 0.01f, 1.0f);
+    float tess = 32.0f * clamp((far - dist) / (far - near), 0.01f, 1.0f);
     
     PatchTess pt;
     pt.EdgeTess[0] = tess;
@@ -157,7 +157,7 @@ float GetHeight(float2 uv)
     float g = sqrt(gx * gx + gy * gy);
     
     float down = lerp(0.0, 0.1, saturate(s));
-    float up = lerp(0.0, 0.05, saturate(g));
+    float up = lerp(0.0, 0.3, saturate(g));
     float height = lerp(up, -down, saturate(s));
 
     return height * _HeightVaryings;
@@ -306,15 +306,15 @@ Varyings TessSplatmapDomain(PatchTess patchTess, float3 w : SV_DomainLocation, c
     output.dynamicLightmapUV = INTERPOLATE(tri, w, dynamicLightmapUV);
     #endif
 
-    float offset = 0.05 / _RecordDistance;
+    float offset = 0.03 / _RecordDistance;
     float2 uv = (output.positionWS.xz - _OriginalPosition.xz) / _RecordDistance * 0.5 + 0.5;
     float2 uvdx = uv + float2(offset, 0.0);
     float2 uvdy = uv + float2(0.0, offset);
 
     #if defined(_NORMALMAP) && !defined(ENABLE_TERRAIN_PERPIXEL_NORMAL)
     float h = GetHeight(uv);
-    float dhdx = (GetHeight(uvdx) - h) / offset;
-    float dhdy = (GetHeight(uvdy) - h) / offset;
+    float dhdx = (GetHeight(uvdx) - h) / offset * 0.5;
+    float dhdy = (GetHeight(uvdy) - h) / offset * 0.5;
 
     float3 normalTS = normalize(float3(dhdx, dhdy, 1.0));
 

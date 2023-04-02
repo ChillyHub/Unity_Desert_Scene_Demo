@@ -156,22 +156,29 @@ void SSPRFillHole(uint3 id : SV_DispatchThreadID)
     float2 uv = _UVMappingTexture[id.xy];
 
     UNITY_BRANCH
-    if (uv.x < 0.0 || uv.y < 0.0)
+    if (uv.x <= 0.0 || uv.y <= 0.0)
     {
-        uint2 offsets[5] = {
-            uint2(0, 1), uint2(1, 0), uint2(1, 1), uint2(0, 2), uint2(2, 0)
+        int o = 3;
+        int2 offsets[8] = {
+            int2(-o, -o), int2(-o, 0), int2(-o, o), 
+            int2(0, -o),               int2(0, o), 
+            int2(o, -o),  int2(o, 0),  int2(o, o) 
         };
 
-        for (int i = 0; i < 5; ++i)
+        float weight = 0.0;
+        float2 avgUV = 0.0;
+        for (int i = 0; i < 8; ++i)
         {
             float2 newUV = _UVMappingTexture[id.xy + offsets[i]];
 
             UNITY_BRANCH
-            if (newUV.x >= 0.0 && newUV.y >= 0.0)
+            if (newUV.x > 0.0 && newUV.y > 0.0)
             {
-                _UVMappingTexture[id.xy] = newUV;
-                return;
+                avgUV += newUV;
+                weight += 1.0;
             }
         }
+
+        _UVMappingTexture[id.xy] = avgUV / weight;
     }
 }
