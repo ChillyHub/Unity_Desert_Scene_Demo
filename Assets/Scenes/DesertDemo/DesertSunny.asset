@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97c23e3b12dc18c42a140437e53d3951, type: 3}
   m_Name: Tonemapping
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   mode:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
 --- !u!114 &-7153957369393295474
 MonoBehaviour:
@@ -28,7 +28,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899c54efeace73346a0a16faa3afe726, type: 3}
   m_Name: Vignette
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   color:
     m_OverrideState: 0
     m_Value: {r: 0, g: 0, b: 0, a: 1}
@@ -139,7 +139,7 @@ MonoBehaviour:
     m_Value: 1
   scatteringMoon:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.527
   scatteringFogDensity:
     m_OverrideState: 1
     m_Value: 1
@@ -161,6 +161,8 @@ MonoBehaviour:
   dynamicFogDensity:
     m_OverrideState: 0
     m_Value: 0
+  sunDirection: {x: 0, y: 0, z: 1}
+  moonDirection: {x: 0, y: 0, z: -1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,9 +197,3 @@ MonoBehaviour:
   enable:
     m_OverrideState: 1
     m_Value: 1
-  planePosition:
-    m_OverrideState: 1
-    m_Value: {x: 207.1, y: 4.4, z: 91.6}
-  planeNormal:
-    m_OverrideState: 0
-    m_Value: {x: 0, y: 1, z: 0}

@@ -41,6 +41,9 @@ namespace UnityEngine.Rendering.Universal
         [Header("Dynamic Fog")]
         public ClampedFloatParameter dynamicFogHeight = new ClampedFloatParameter(5.0f, 0.0f, 10.0f);
         public ClampedFloatParameter dynamicFogDensity = new ClampedFloatParameter(0.0f, 0.0f, 1.0f);
+        
+        public Vector3 sunDirection = Vector3.forward;
+        public Vector3 moonDirection = Vector3.back;
 
         public bool IsActive() => density.value > float.Epsilon;
 

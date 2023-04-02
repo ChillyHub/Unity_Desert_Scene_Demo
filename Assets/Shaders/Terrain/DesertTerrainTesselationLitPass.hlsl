@@ -306,15 +306,25 @@ Varyings TessSplatmapDomain(PatchTess patchTess, float3 w : SV_DomainLocation, c
     output.dynamicLightmapUV = INTERPOLATE(tri, w, dynamicLightmapUV);
     #endif
 
+    float2 splatUV = (output.uvMainAndLM.xy * (_Control_TexelSize.zw - 1.0f) + 0.5f) * _Control_TexelSize.xy;
+    half4 splatControl = SAMPLE_TEXTURE2D_LOD(_Control, sampler_Control, splatUV, 0);
+
+    UNITY_BRANCH
+    if (splatControl.r <= 0.0)
+    {
+        output.clipPos = TransformWorldToHClip(output.positionWS);
+        return output;
+    }
+
     float offset = 0.03 / _RecordDistance;
     float2 uv = (output.positionWS.xz - _OriginalPosition.xz) / _RecordDistance * 0.5 + 0.5;
     float2 uvdx = uv + float2(offset, 0.0);
     float2 uvdy = uv + float2(0.0, offset);
 
     #if defined(_NORMALMAP) && !defined(ENABLE_TERRAIN_PERPIXEL_NORMAL)
-    float h = GetHeight(uv);
-    float dhdx = (GetHeight(uvdx) - h) / offset * 0.5;
-    float dhdy = (GetHeight(uvdy) - h) / offset * 0.5;
+    float h = GetHeight(uv) * splatControl.r;
+    float dhdx = (GetHeight(uvdx) * splatControl.r - h) / offset * 0.1;
+    float dhdy = (GetHeight(uvdy) * splatControl.r - h) / offset * 0.1;
 
     float3 normalTS = normalize(float3(dhdx, dhdy, 1.0));
 
@@ -406,6 +416,12 @@ half4 TessSplatmapFragment(Varyings IN) : SV_TARGET
     InputData inputData;
     InitializeInputData(IN, normalTS, inputData);
     SETUP_DEBUG_TEXTURE_DATA(inputData, IN.uvMainAndLM.xy, _BaseMap);
+
+    // CUSTOM: ----------------------------------------------------------------------------
+    // View color trans
+    half4 diffAlbedo = SAMPLE_TEXTURE2D(_Splat0, sampler_Splat0, IN.uvSplat01.xy);
+    float fac = 1.0 - saturate(dot(inputData.normalWS, inputData.viewDirectionWS));
+    albedo += lerp(diffAlbedo, diffAlbedo + 0.1, fac) * pow(fac, 4.0) * splatControl.r;
 
 #if defined(_DBUFFER)
     half3 specular = half3(0.0h, 0.0h, 0.0h);

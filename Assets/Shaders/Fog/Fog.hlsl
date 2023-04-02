@@ -26,6 +26,9 @@ CBUFFER_START(UnityPerMaterial)
     float _NightScatteringFac;
     float _gDayMie;
     float _gNightMie;
+
+    float3 _SunDirection;
+    float3 _MoonDirection;
 CBUFFER_END
 
 struct FogData
@@ -103,12 +106,13 @@ half3 GetScatteringFogColor(FogData fd, float3 sunDir, float3 moonDir, float3 vi
     float3 coefMoon = pow(fd.scatteringMoon, 10.0);
     half3 sunScattering = sunMiePhase * fd.dayScatteringColor * (1.0 - exp(coefSun * len));
     half3 moonScattering = moonMiePhase * fd.nightScatteringColor * (1.0 - exp(coefMoon * len));
+    sunScattering *= smoothstep(-0.2, 0.0, dot(sunDir, float3(0.0, 1.0, 0.0)));
+    moonScattering *= smoothstep(-0.2, 0.0, dot(moonDir, float3(0.0, 1.0, 0.0)));
 
     return fd.scatteringFogDensity * (fd.dayScatteringFac * sunScattering + fd.nightScatteringFac * moonScattering);
 }
 
-half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS, float3 viewDirWS,
-    float3 positionWS, float3 viewPosWS)
+half3 GetFogColor(FogData fd, float3 sourceColor, float3 viewDirWS, float3 positionWS, float3 viewPosWS)
 {
     // TODO: Transmit Color
     float len = length(positionWS - viewPosWS);
@@ -121,19 +125,18 @@ half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDi
     half3 distanceFog = GetDistanceFogColor(fd, len);
 
     // TODO: Get Scattering Fog Color
-    half3 inScattering = GetScatteringFogColor(fd, sunDirWS, moonDirWS, viewDirWS, len);
+    half3 inScattering = GetScatteringFogColor(fd, _SunDirection, _MoonDirection, viewDirWS, len);
 
     return fd.density * (excintion + heightFog + distanceFog + inScattering);
 }
 
-half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS,
-    float2 positionNDC, float deviceDepth)
+half3 GetFogColor(FogData fd, float3 sourceColor, float2 positionNDC, float deviceDepth)
 {
     float3 positioWS = ComputeWorldSpacePosition(positionNDC, deviceDepth, unity_MatrixInvVP);
     float3 viewPosWS = GetCameraPositionWS();
     float3 viewDirWS = normalize(viewPosWS - positioWS);
 
-    return GetFogColor(fd, sourceColor, sunDirWS, moonDirWS, viewDirWS, positioWS, viewPosWS);
+    return GetFogColor(fd, sourceColor, viewDirWS, positioWS, viewPosWS);
 }
 
 #endif

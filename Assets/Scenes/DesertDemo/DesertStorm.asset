@@ -161,6 +161,8 @@ MonoBehaviour:
   dynamicFogDensity:
     m_OverrideState: 1
     m_Value: 1
+  sunDirection: {x: 0, y: 0, z: 1}
+  moonDirection: {x: 0, y: 0, z: -1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,9 +197,3 @@ MonoBehaviour:
   enable:
     m_OverrideState: 1
     m_Value: 1
-  planePosition:
-    m_OverrideState: 1
-    m_Value: {x: 207.1, y: 4.4, z: 91.6}
-  planeNormal:
-    m_OverrideState: 0
-    m_Value: {x: 0, y: 1, z: 0}

@@ -139,7 +139,7 @@ Material:
     - _Edge_Rim_Threshold: 0.1
     - _Edge_Rim_Width: 1
     - _Emission_Color_Only: 0
-    - _Emission_Intensity: 1
+    - _Emission_Intensity: 2.75
     - _EnvironmentReflections: 1
     - _GI_Intensity: 1
     - _GlossMapScale: 0

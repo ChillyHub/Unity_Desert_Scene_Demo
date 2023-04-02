@@ -769,6 +769,8 @@ namespace UnityEngine.Rendering.Universal.Internal
             material.SetFloat(ShaderConstants._gNightMie, m_ScreenSpaceFog.gNightMie.value);
             material.SetFloat(ShaderConstants._DynamicFogHeight, m_ScreenSpaceFog.dynamicFogHeight.value);
             material.SetFloat(ShaderConstants._DynamicFogDensity, m_ScreenSpaceFog.dynamicFogDensity.value);
+            material.SetVector(ShaderConstants._SunDirection, (Vector4)m_ScreenSpaceFog.sunDirection);
+            material.SetVector(ShaderConstants._MoonDirection, (Vector4)m_ScreenSpaceFog.moonDirection);
 
             cmd.SetGlobalTexture("_SourceTex", source);
             cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
@@ -1783,6 +1785,8 @@ namespace UnityEngine.Rendering.Universal.Internal
             public static readonly int _gNightMie = Shader.PropertyToID("_gNightMie");
             public static readonly int _DynamicFogHeight = Shader.PropertyToID("_DynamicFogHeight");
             public static readonly int _DynamicFogDensity = Shader.PropertyToID("_DynamicFogDensity");
+            public static readonly int _SunDirection = Shader.PropertyToID("_SunDirection");
+            public static readonly int _MoonDirection = Shader.PropertyToID("_MoonDirection");
 
             public static int[] _BloomMipUp;
             public static int[] _BloomMipDown;

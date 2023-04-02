@@ -34,6 +34,10 @@ CBUFFER_START(UnityPerMaterial)
 
     float _DynamicFogHeight;
     float _DynamicFogDensity;
+
+    
+    float3 _SunDirection;
+    float3 _MoonDirection;
 CBUFFER_END
 
 struct FogData
@@ -123,18 +127,21 @@ half3 GetDistanceFogColor(FogData fd, float len)
 
 half3 GetScatteringFogColor(FogData fd, float3 sunDir, float3 moonDir, float3 viewDir, float len)
 {
-    float sunCos = dot(viewDir, sunDir);
-    float moonCos = dot(viewDir, moonDir);
+    float sunCos = dot(viewDir, -sunDir);
+    float moonCos = dot(viewDir, -moonDir);
     float sunMiePhase = GetMiePhaseFunction(sunCos, fd.gDayMie);
     float moonMiePhase = GetMiePhaseFunction(moonCos, fd.gNightMie);
     float3 coefSun = pow(
-        abs(float3(fd.scatteringRedWave, fd.scatteringGreenWave, fd.scatteringBlueWave) * fd.scattering), 10.0);
-    float3 coefMoon = pow(abs(fd.scatteringMoon), 10.0);
+        float3(fd.scatteringRedWave, fd.scatteringGreenWave, fd.scatteringBlueWave) * fd.scattering, 10.0);
+    float3 coefMoon = pow(fd.scatteringMoon, 10.0);
     half3 sunScattering = sunMiePhase * fd.dayScatteringColor * (1.0 - exp(-coefSun * len));
     half3 moonScattering = moonMiePhase * fd.nightScatteringColor * (1.0 - exp(-coefMoon * len));
+    sunScattering *= smoothstep(-0.4, 0.0, dot(sunDir, float3(0.0, 1.0, 0.0)));
+    moonScattering *= smoothstep(-0.4, 0.0, dot(moonDir, float3(0.0, 1.0, 0.0)));
 
     return fd.scatteringFogDensity * (fd.dayScatteringFac * sunScattering + fd.nightScatteringFac * moonScattering);
 }
+
 float2 Hash(float2 st, int seed)
 {
     float2 s = float2(dot(st, float2(127.1, 311.7)) + seed, dot(st, float2(269.5, 183.3)) + seed);
@@ -165,8 +172,8 @@ half3 GetDynamicFogColor(FogData fd, float3 positionWS, float3 viewPosWS, float2
         (viewPosWS.y + fd.dynamicFogHeight - positionWS.y)) * noise * fd.dynamicFogDensity;
 }
 
-half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS, float3 viewDirWS,
-    float3 positionWS, float3 viewPosWS, float2 screenUV)
+half3 GetFogColor(FogData fd, float3 sourceColor, float3 viewDirWS, float3 positionWS, float3 viewPosWS,
+    float2 screenUV)
 {
     // TODO: Transmit Color
     float len = length(positionWS - viewPosWS);
@@ -179,21 +186,20 @@ half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDi
     half3 distanceFog = GetDistanceFogColor(fd, len);
 
     // TODO: Get Scattering Fog Color
-    half3 inScattering = GetScatteringFogColor(fd, sunDirWS, moonDirWS, viewDirWS, len);
+    half3 inScattering = GetScatteringFogColor(fd, _SunDirection, _MoonDirection, viewDirWS, len);
 
     half3 dynamicFog = GetDynamicFogColor(fd, positionWS, viewPosWS, screenUV);
 
     return fd.density * (excintion + heightFog + distanceFog + inScattering + dynamicFog);
 }
 
-half3 GetFogColor(FogData fd, float3 sourceColor, float3 sunDirWS, float3 moonDirWS,
-    float2 positionNDC, float deviceDepth, float2 screenUV)
+half3 GetFogColor(FogData fd, float3 sourceColor, float2 positionNDC, float deviceDepth, float2 screenUV)
 {
     float3 positioWS = ComputeWorldSpacePosition(positionNDC, deviceDepth, unity_MatrixInvVP);
     float3 viewPosWS = GetCameraPositionWS();
     float3 viewDirWS = normalize(viewPosWS - positioWS);
 
-    return GetFogColor(fd, sourceColor, sunDirWS, moonDirWS, viewDirWS, positioWS, viewPosWS, screenUV);
+    return GetFogColor(fd, sourceColor, viewDirWS, positioWS, viewPosWS, screenUV);
 }
 
 #endif

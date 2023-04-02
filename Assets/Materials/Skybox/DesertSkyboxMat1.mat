@@ -182,9 +182,9 @@ Material:
     - _DayColor: {r: 0.11698109, g: 0.23015133, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HorizDayColor: {r: 0.2588235, g: 0.3668889, b: 1, a: 1}
-    - _HorizNightColor: {r: 0, g: 0.02289708, b: 0.11372549, a: 1}
+    - _HorizNightColor: {r: 0, g: 0.011764706, b: 0.056862745, a: 1}
     - _MoonColor: {r: 0, g: 0.8290131, b: 1, a: 1}
-    - _NightColor: {r: 0.002505467, g: 0, b: 0.11372549, a: 1}
+    - _NightColor: {r: 0.0019607844, g: 0, b: 0.056862745, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SunColor: {r: 1, g: 0.7341133, b: 0.19999999, a: 1}
   m_BuildTextureStacks: []

@@ -133,7 +133,7 @@ half3 GetReflectionColor(PerMaterial pm, Surface surface)
     float biasMapDeviceDepth = SampleDepthTexture(biasUV);
     float biasMapDepth = LinearEyeDepth(biasMapDeviceDepth, _ZBufferParams);
 
-    bias *= saturate(biasMapDepth - LinearEyeDepth(surface.posDeviceDepth, _ZBufferParams));
+    bias *= saturate(biasMapDepth - LinearEyeDepth(surface.posDeviceDepth, _ZBufferParams) * 0.1);
     biasUV = surface.screenUV + float2(bias, 0.0);
 
     float2 biasReflectUV = SampleUVMappingTexture(clamp(0.0, 1.0, biasUV));

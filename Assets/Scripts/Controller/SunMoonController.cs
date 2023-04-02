@@ -1,4 +1,5 @@
 ﻿using System;
+using CustomRenderer;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -49,7 +50,7 @@ namespace Controller
                 }
                 else
                 {
-                    moon.intensity = 0.4f;
+                    moon.intensity = 0.2f;
                     moon.enabled = true;
                 }
             }
@@ -59,6 +60,10 @@ namespace Controller
                 material.SetVector("_SunDir", -(Vector4)sun.transform.forward);
                 material.SetVector("_MoonDir", -(Vector4)moon.transform.forward);
             }
+
+            var volume = VolumeManager.instance.stack.GetComponent<ScreenSpaceFog>();
+            volume.sunDirection = -sun.transform.forward;
+            volume.moonDirection = -moon.transform.forward;
 
             if (autoRotateSun)
             {

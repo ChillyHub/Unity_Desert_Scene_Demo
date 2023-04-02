@@ -57,8 +57,7 @@ float4 ScreenSpaceFogPassFragment(Varyings input) : SV_Target
     float3 positionWS = viewPos + depth * input.viewRay;
 
     FogData fd = GetFogData(light.direction);
-    float3 color = GetFogColor(fd, rgba.rgb, light.direction, -light.direction,
-        viewDir, positionWS, viewPos, input.screenUV);
+    float3 color = GetFogColor(fd, rgba.rgb, viewDir, positionWS, viewPos, input.screenUV);
     
     return float4(color, rgba.a);
 }

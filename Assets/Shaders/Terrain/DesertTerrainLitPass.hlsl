@@ -400,6 +400,11 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
     InitializeInputData(IN, normalTS, inputData);
     SETUP_DEBUG_TEXTURE_DATA(inputData, IN.uvMainAndLM.xy, _BaseMap);
 
+    // CUSTOM: ----------------------------------------------------------------------------
+    // View color trans
+    half4 diffAlbedo = SAMPLE_TEXTURE2D(_Splat0, sampler_Splat0, IN.uvSplat01.xy);
+    albedo += diffAlbedo * (1.0 - saturate(dot(inputData.normalWS, inputData.viewDirectionWS))) * 0.3 * splatControl.r;
+
 #if defined(_DBUFFER)
     half3 specular = half3(0.0h, 0.0h, 0.0h);
     ApplyDecal(IN.clipPos,

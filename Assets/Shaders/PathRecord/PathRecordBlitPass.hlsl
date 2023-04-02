@@ -23,6 +23,7 @@ struct Varyings
 float3 _PreOriginalPosition;
 float3 _OriginalPosition;
 float _RecordDistance;
+float _DeltaTime;
 
 Varyings PathRecordBlitVertex(Attributes input)
 {
@@ -48,7 +49,7 @@ half4 PathRecordBlitFragment(Varyings input) : SV_Target
 
     float3 current = SAMPLE_TEXTURE2D(_CurrentRecordTexture, sampler_CurrentRecordTexture, input.screenUV);
 
-    float offset = 0.005 / _RecordDistance;
+    float offset = 0.0005 / _RecordDistance;
     float2 offsets[9] = {
         float2(-offset, -offset), float2(0.0, -offset), float2(offset, -offset),
         float2(-offset, 0.0),     float2(0.0, 0.0),     float2(offset, 0.0),
@@ -61,7 +62,7 @@ half4 PathRecordBlitFragment(Varyings input) : SV_Target
     for (int i = 0; i < 9; ++i)
     {
         half3 sample = SAMPLE_TEXTURE2D(_SourceRecordTexture, sampler_SourceRecordTexture, center + offsets[i]);
-        sample = max(0.0, sample - unity_DeltaTime.z * 0.1);
+        sample = max(0.0, sample - _DeltaTime * 0.11);
         source += sample;
     }
     source /= 9.0;

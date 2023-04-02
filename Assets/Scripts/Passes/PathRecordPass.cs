@@ -34,6 +34,7 @@ namespace CustomRenderer
         private static readonly int PreOriginalPositionId = Shader.PropertyToID("_PreOriginalPosition");
         private static readonly int OriginalPositionId = Shader.PropertyToID("_OriginalPosition");
         private static readonly int RecordDistanceId = Shader.PropertyToID("_RecordDistance");
+        private static readonly int DeltaTimeId = Shader.PropertyToID("_DeltaTime");
 
         public PathRecordPass(string profilingTag, float recordDistance, 
             PathRecordRendererFeature.FilterSetting filterSetting,
@@ -95,9 +96,12 @@ namespace CustomRenderer
                 projection = GL.GetGPUProjectionMatrix(
                     projection, renderingData.cameraData.IsCameraProjectionMatrixFlipped());
 
-                var volume = VolumeManager.instance.stack.GetComponent<PathRecord>();
                 _preCameraPosition = _curCameraPosition;
-                _curCameraPosition = volume.focusPosition;
+                var volume = VolumeManager.instance.stack.GetComponent<PathRecord>();
+                if (Vector3.Distance(_curCameraPosition, volume.focusPosition) > _recordDistance * 0.25)
+                {
+                    _curCameraPosition = volume.focusPosition;
+                }
 
                 Matrix4x4 view = Matrix4x4.zero;
                 view[0, 0] = 1.0f;
@@ -115,7 +119,7 @@ namespace CustomRenderer
 
                 // TODO: Render Depth map of Ground
                 cmd.SetRenderTarget(new RenderTargetIdentifier(GroundDepthTextureId));
-                cmd.ClearRenderTarget(false, true, Color.black, 0.0f);
+                cmd.ClearRenderTarget(false, true, Color.white, 0.0f);
                 // Ensure we flush our command-buffer before we render...
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
@@ -137,6 +141,7 @@ namespace CustomRenderer
                 cmd.SetGlobalVector(PreOriginalPositionId, (Vector4)_preCameraPosition);
                 cmd.SetGlobalVector(OriginalPositionId, (Vector4)_curCameraPosition);
                 cmd.SetGlobalFloat(RecordDistanceId, _recordDistance);
+                cmd.SetGlobalFloat(DeltaTimeId, Time.deltaTime);
                 cmd.SetGlobalTexture(SourceRecordTextureId, _source.Identifier());
                 cmd.SetGlobalTexture(CurrentRecordTextureId, new RenderTargetIdentifier(CurrentRecordTextureId));
                 
