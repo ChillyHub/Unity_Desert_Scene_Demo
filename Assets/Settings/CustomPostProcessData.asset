@@ -34,6 +34,8 @@ MonoBehaviour:
     uberPostPS: {fileID: 4800000, guid: e7857e9d0c934dc4f83f270f8447b006, type: 3}
     finalPostPassPS: {fileID: 4800000, guid: c49e63ed1bbcb334780a3bd19dfed403, type: 3}
     screenSpaceFogPS: {fileID: 4800000, guid: 9ec91fcf4dfa4d15909b398137a54c9f, type: 3}
+    customToneMappingPS: {fileID: 4800000, guid: 61a8e908e1e1466b8e9f8f40e1ed95de,
+      type: 3}
   textures:
     blueNoise16LTex:
     - {fileID: 2800000, guid: 81200413a40918d4d8702e94db29911c, type: 3}

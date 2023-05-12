@@ -84,6 +84,9 @@ namespace UnityEngine.Rendering.Universal
             // CUSTOM:
             [Reload("Shaders/PostProcessing/ScreenSpaceFog.shader")]
             public Shader screenSpaceFogPS;
+            
+            [Reload("Shaders/PostProcessing/GranTurismoToneMappingShader.shader")]
+            public Shader customToneMappingPS;
         }
 
         [Serializable, ReloadGroup]

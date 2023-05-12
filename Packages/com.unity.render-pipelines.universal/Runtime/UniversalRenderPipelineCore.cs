@@ -911,6 +911,7 @@ namespace UnityEngine.Rendering.Universal
         PaniniProjection,
         UberPostProcess,
         Bloom,
+        CustomToneMapping,
         LensFlareDataDriven,
         MotionVectors,
 

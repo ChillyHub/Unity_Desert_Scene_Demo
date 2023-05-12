@@ -156,8 +156,8 @@ float GetHeight(float2 uv)
 
     float g = sqrt(gx * gx + gy * gy);
     
-    float down = lerp(0.0, 0.1, saturate(s));
-    float up = lerp(0.0, 0.3, saturate(g));
+    float down = lerp(0.0, 0.2, saturate(s));
+    float up = lerp(0.0, 0.1, saturate(g));
     float height = lerp(up, -down, saturate(s));
 
     return height * _HeightVaryings;

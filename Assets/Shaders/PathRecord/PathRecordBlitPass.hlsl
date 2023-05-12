@@ -49,7 +49,7 @@ half4 PathRecordBlitFragment(Varyings input) : SV_Target
 
     float3 current = SAMPLE_TEXTURE2D(_CurrentRecordTexture, sampler_CurrentRecordTexture, input.screenUV);
 
-    float offset = 0.0005 / _RecordDistance;
+    float offset = 0.001 / _RecordDistance;
     float2 offsets[9] = {
         float2(-offset, -offset), float2(0.0, -offset), float2(offset, -offset),
         float2(-offset, 0.0),     float2(0.0, 0.0),     float2(offset, 0.0),

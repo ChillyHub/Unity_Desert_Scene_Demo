@@ -48,6 +48,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         FilmGrain m_FilmGrain;
         // CUSTOM: 
         ScreenSpaceFog m_ScreenSpaceFog;
+        CustomToneMapping m_CustomToneMapping;
 
         // Misc
         const int k_MaxPyramidSize = 16;
@@ -246,6 +247,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             
             // CUSTOM: 
             m_ScreenSpaceFog = stack.GetComponent<ScreenSpaceFog>();
+            m_CustomToneMapping = stack.GetComponent<CustomToneMapping>();
 
             if (m_IsFinalPass)
             {
@@ -349,6 +351,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             
             // CUSTOM:
             bool useScreenSpaceFog = m_ScreenSpaceFog.IsActive();
+            bool useCustomToneMapping = m_CustomToneMapping.IsActive();
 
             int amountOfPassesRemaining = (useStopNan ? 1 : 0) + (useSubPixeMorpAA ? 1 : 0) + (useDepthOfField ? 1 : 0) + (useLensFlare ? 1 : 0) + (useMotionBlur ? 1 : 0) + (usePaniniProjection ? 1 : 0);
 
@@ -523,6 +526,17 @@ namespace UnityEngine.Rendering.Universal.Internal
                 {
                     using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.Bloom)))
                         SetupBloom(cmd, GetSource(), m_Materials.uber);
+                }
+                
+                // CUSTOM:
+                // Custom ToneMapping
+                if (useCustomToneMapping)
+                {
+                    using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.CustomToneMapping)))
+                    {
+                        DoCustomToneMapping(ref cameraData, cmd, GetSource(), GetDestination());
+                        Swap(ref renderer);
+                    }
                 }
 
                 // Setup other effects constants
@@ -772,6 +786,30 @@ namespace UnityEngine.Rendering.Universal.Internal
             material.SetVector(ShaderConstants._SunDirection, (Vector4)m_ScreenSpaceFog.sunDirection);
             material.SetVector(ShaderConstants._MoonDirection, (Vector4)m_ScreenSpaceFog.moonDirection);
 
+            cmd.SetGlobalTexture("_SourceTex", source);
+            cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
+            cmd.Blit(source, destination, material, 0);
+        }
+
+        #endregion
+
+        #region Custom ToneMapping
+
+        void DoCustomToneMapping(ref CameraData cameraData, CommandBuffer cmd,
+            RenderTargetIdentifier source, RenderTargetIdentifier destination)
+        {
+            var material = m_Materials.customToneMapping;
+            var data = m_CustomToneMapping.granTurismoData;
+
+            material.SetFloat(ShaderConstants._P, data.maximumBrightness.value);
+            material.SetFloat(ShaderConstants._a, data.slope.value);
+            material.SetFloat(ShaderConstants._m, data.linearSectionStart.value);
+            material.SetFloat(ShaderConstants._l, data.linearSectionLength.value);
+            material.SetFloat(ShaderConstants._c, data.blackTightness.value);
+            material.SetFloat(ShaderConstants._b, data.darknessValue.value);
+            
             cmd.SetGlobalTexture("_SourceTex", source);
             cmd.SetRenderTarget(new RenderTargetIdentifier(destination, 0, CubemapFace.Unknown, -1),
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
@@ -1649,6 +1687,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             
             // CUSTOM:
             public readonly Material screenSpaceFog;
+            public readonly Material customToneMapping;
 
             public MaterialLibrary(PostProcessData data)
             {
@@ -1667,6 +1706,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 
                 // CUSTOM:
                 screenSpaceFog = Load(data.shaders.screenSpaceFogPS);
+                customToneMapping = Load(data.shaders.customToneMappingPS);
             }
 
             Material Load(Shader shader)
@@ -1700,6 +1740,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 
                 // CUSTOM:
                 CoreUtils.Destroy(screenSpaceFog);
+                CoreUtils.Destroy(customToneMapping);
             }
         }
 
@@ -1787,6 +1828,13 @@ namespace UnityEngine.Rendering.Universal.Internal
             public static readonly int _DynamicFogDensity = Shader.PropertyToID("_DynamicFogDensity");
             public static readonly int _SunDirection = Shader.PropertyToID("_SunDirection");
             public static readonly int _MoonDirection = Shader.PropertyToID("_MoonDirection");
+
+            public static readonly int _P = Shader.PropertyToID("_P");
+            public static readonly int _a = Shader.PropertyToID("_a");
+            public static readonly int _m = Shader.PropertyToID("_m");
+            public static readonly int _l = Shader.PropertyToID("_l");
+            public static readonly int _c = Shader.PropertyToID("_c");
+            public static readonly int _b = Shader.PropertyToID("_b");
 
             public static int[] _BloomMipUp;
             public static int[] _BloomMipDown;

@@ -179,8 +179,44 @@ MonoBehaviour:
   - {fileID: 4209570437591762486}
   - {fileID: -3938500227910267921}
   - {fileID: -5343899178103829634}
+  - {fileID: 1684224842549252085}
   - {fileID: -9051328360630190653}
   - {fileID: -7153957369393295474}
+--- !u!114 &1684224842549252085
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e300059561384e32ba5209dcd83f0fcb, type: 3}
+  m_Name: CustomToneMapping
+  m_EditorClassIdentifier: 
+  active: 1
+  mode:
+    m_OverrideState: 1
+    m_Value: 1
+  granTurismoData:
+    maximumBrightness:
+      m_OverrideState: 0
+      m_Value: 1
+    slope:
+      m_OverrideState: 0
+      m_Value: 1
+    linearSectionStart:
+      m_OverrideState: 0
+      m_Value: 0.22
+    linearSectionLength:
+      m_OverrideState: 0
+      m_Value: 0.4
+    blackTightness:
+      m_OverrideState: 0
+      m_Value: 1.33
+    darknessValue:
+      m_OverrideState: 0
+      m_Value: 0
 --- !u!114 &4209570437591762486
 MonoBehaviour:
   m_ObjectHideFlags: 3
