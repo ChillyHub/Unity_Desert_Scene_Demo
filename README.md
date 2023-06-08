@@ -7,12 +7,12 @@
 <details><summary>效果视频 (mp4)</summary>
 <p>
 
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/02f5c655-a82a-409a-9f56-3d798b581523
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/26b571cd-f9e0-4560-adcd-e81a7ccb3978
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/776c39ab-46a6-4f20-8583-2475490bb07e
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/9b2a62ac-99f3-4d58-9643-ae751465e572
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/b830813a-daaa-42e5-9e3e-00c5f15fbe61
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/75598757/1f9bf36a-95f1-4034-9297-fe26fb568de7
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/02f5c655-a82a-409a-9f56-3d798b581523
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/26b571cd-f9e0-4560-adcd-e81a7ccb3978
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/776c39ab-46a6-4f20-8583-2475490bb07e
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/9b2a62ac-99f3-4d58-9643-ae751465e572
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/b830813a-daaa-42e5-9e3e-00c5f15fbe61
+https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/1f9bf36a-95f1-4034-9297-fe26fb568de7
 
 </p>
 </details>
