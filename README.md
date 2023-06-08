@@ -4,6 +4,8 @@
 
 ### 效果：
 
+<video src="./README_assets/video.mp4"></video>
+
 <img src="README_assets/屏幕截图 2023-04-03 062609.png" />
 
 <img src="./README_assets/屏幕截图 2023-04-03 062308.png" alt="屏幕截图 2023-04-03 062308" />
