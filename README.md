@@ -6,7 +6,7 @@
 
 <video src="./README_assets/video.mp4"></video>
 
-https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/video.mp4
+<video src="https://github.com/ChillyHub/Unity_Desert_Scene_Demo/README_assets/video.mp4"></video>
 
 <img src="README_assets/屏幕截图 2023-04-03 062609.png" />
 
