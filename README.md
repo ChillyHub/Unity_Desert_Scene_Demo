@@ -4,6 +4,26 @@
 
 ### 效果：
 
+<details><summary>效果图片</summary>
+<p>
+
+<img src="README_assets/屏幕截图 2023-04-03 062609.png" />
+
+<img src="./README_assets/屏幕截图 2023-04-03 062308.png" alt="屏幕截图 2023-04-03 062308" />
+
+<img src="./README_assets/屏幕截图 2023-04-03 062112.png" alt="屏幕截图 2023-04-03 062112" />
+
+<img src="./README_assets/屏幕截图 2023-04-03 062429.png" alt="屏幕截图 2023-04-03 062429" />
+
+<img src="./README_assets/屏幕截图 2023-03-27 071719.png" alt="屏幕截图 2023-03-27 071719" />
+
+<img src="./README_assets/屏幕截图 2023-03-27 071836.png" alt="屏幕截图 2023-03-27 071836" />
+
+<img src="./README_assets/屏幕截图 2023-03-27 072005.png" alt="屏幕截图 2023-03-27 072005" />
+
+</p>
+</details>
+
 <details><summary>效果视频 (mp4)</summary>
 <p>
 
@@ -35,20 +55,6 @@ https://github.com/ChillyHub/Unity_Desert_Scene_Demo/assets/75598757/bad3006e-70
 
 </p>
 </details>
-
-<img src="README_assets/屏幕截图 2023-04-03 062609.png" />
-
-<img src="./README_assets/屏幕截图 2023-04-03 062308.png" alt="屏幕截图 2023-04-03 062308" />
-
-<img src="./README_assets/屏幕截图 2023-04-03 062112.png" alt="屏幕截图 2023-04-03 062112" />
-
-<img src="./README_assets/屏幕截图 2023-04-03 062429.png" alt="屏幕截图 2023-04-03 062429" />
-
-<img src="./README_assets/屏幕截图 2023-03-27 071719.png" alt="屏幕截图 2023-03-27 071719" />
-
-<img src="./README_assets/屏幕截图 2023-03-27 071836.png" alt="屏幕截图 2023-03-27 071836" />
-
-<img src="./README_assets/屏幕截图 2023-03-27 072005.png" alt="屏幕截图 2023-03-27 072005" />
 
 
 
